@@ -416,6 +416,11 @@
     text-align: center;
     cursor: pointer;
   }
+  .contact-card-cta.muted {
+    color: var(--wiom-text-hint);
+    cursor: default;
+    pointer-events: none;
+  }
 
   /* Inline CTA — sibling of bubble, joined by divider line */
   .msg-divider {
@@ -1577,7 +1582,9 @@
     `;
     chatBody.appendChild(prevCard);
 
-    // Bot bubble: proposal with two ACTIVE inline CTAs (not muted — user hasn't responded)
+    // Bot bubble: proposal with two visually-active CTAs.
+    // For this demo they are inert (click does nothing) — user proceeds via the
+    // typed-intent path. They look active (pink text) for design fidelity.
     const proposalRow = document.createElement('div');
     proposalRow.className = 'msg-row bot';
     proposalRow.innerHTML = `
@@ -1590,77 +1597,15 @@
           </div>
         </div>
         <div class="msg-divider"></div>
-        <button class="msg-cta middle" data-action="accept">
+        <button class="msg-cta middle" type="button">
           <span class="msg-cta-text">यह दिन सही है</span>
         </button>
         <div class="msg-divider"></div>
-        <button class="msg-cta" data-action="change">
+        <button class="msg-cta" type="button">
           <span class="msg-cta-text">कोई अन्य दिन चुनें</span>
         </button>
       </div>`;
     chatBody.appendChild(proposalRow);
-
-    const acceptCta = proposalRow.querySelector('[data-action="accept"]');
-    const changeCta = proposalRow.querySelector('[data-action="change"]');
-
-    function muteBoth() {
-      acceptCta.classList.add('muted');
-      changeCta.classList.add('muted');
-    }
-
-    // "कोई अन्य दिन चुनें" → mute both, open picker
-    changeCta.addEventListener('click', () => {
-      muteBoth();
-      // Track which CTA the user actioned (for the post-confirm reply quote)
-      state.activeCta = changeCta;
-      showPicker();
-    });
-
-    // "यह दिन सही है" → user accepts proposal; ends with confirmation in chat
-    acceptCta.addEventListener('click', () => {
-      muteBoth();
-      // User reply with quote
-      setTimeout(() => {
-        chatBody.appendChild(userReplyWithQuote(
-          'क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?',
-          'यह दिन सही है',
-          '10:16 AM'
-        ));
-        scrollChatToBottom();
-      }, 250);
-      // Wiom typing
-      setTimeout(() => {
-        chatBody.appendChild(waitingBubble());
-        scrollChatToBottom();
-      }, 900);
-      // Wiom confirms
-      setTimeout(() => {
-        const w = document.getElementById('waitingBubble');
-        if (w) w.remove();
-        chatBody.appendChild(botBubble(
-          [
-            'तारीख पक्की हो गई।',
-            '&nbsp;',
-            '<strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> नेट लगेगा।'
-          ],
-          '10:16 AM'
-        ));
-        chatBody.appendChild(botBubble(['अब आप आराम करें'], '10:16 AM', true));
-        scrollChatToBottom();
-      }, 2500);
-      // Yellow end card
-      setTimeout(() => {
-        const endCard = document.createElement('div');
-        endCard.className = 'prev-chat-card restart';
-        endCard.innerHTML = `
-          <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
-          <div class="prev-chat-card-text">User accepted the proposed date — engineer will be assigned by partner. Rest of the flow is the same as today.</div>
-        `;
-        endCard.addEventListener('click', () => location.reload());
-        chatBody.appendChild(endCard);
-        scrollChatToBottom();
-      }, 4500);
-    });
   }
 
   // Build initial chat content for Case 3 — no date set yet
@@ -1734,9 +1679,14 @@
     else userMsg = 'नेट लगवाने का दिन तय करना है';
     chatBody.appendChild(userBubble(userMsg, '10:42 AM'));
 
-    // Case 2: when user types intent, mute the unanswered proposal CTAs above
+    // Once user types intent, any earlier interactive CTAs in chat become stale —
+    // mute them visually (matching Case 1's already-actioned chat history pattern).
+    // Case 2: proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
+    // Case 3: contact card's "नंबर सेव करें"
     if (state.case === 2) {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
+    } else if (state.case === 3) {
+      chatBody.querySelectorAll('.contact-card-cta').forEach(c => c.classList.add('muted'));
     }
 
     // Reset input + close keyboard
@@ -1827,11 +1777,8 @@
       if (state.case === 1) {
         quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
       } else if (state.case === 2) {
-        // Two paths: tapped existing CTA → quote the proposal
-        //            typed intent → quote the bot's typed-response (same as Case 1)
-        quotedBotMsg = state.intentSent
-          ? 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'
-          : 'क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?';
+        // Only typed-intent path is functional in Case 2 (proposal CTAs are non-functional)
+        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
       } else {
         quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।';
       }
@@ -1918,8 +1865,11 @@
       } else if (!state.intentSent) {
         targets = [inputField];
       } else {
-        const activeCta = chatBody.querySelector('.msg-cta:not(.muted)');
-        if (activeCta) targets = [activeCta];
+        // Target the LATEST active CTA, not the first — Case 2 has inert
+        // proposal CTAs above that come before the bot's response CTA in DOM order
+        const activeCtas = chatBody.querySelectorAll('.msg-cta:not(.muted)');
+        const latestCta = activeCtas[activeCtas.length - 1];
+        if (latestCta) targets = [latestCta];
       }
     } else if (pickerScreen.classList.contains('active')) {
       if (!state.selectedDate) {
