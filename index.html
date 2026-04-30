@@ -651,6 +651,10 @@
     font-size: 14px; line-height: 20px; font-weight: 600;
     color: var(--wiom-text-default);
   }
+  .context-strip-time {
+    font-size: 12px; line-height: 16px; font-weight: 400;
+    color: var(--wiom-text-sec);
+  }
 
   .section-block { display: flex; flex-direction: column; gap: var(--s-12); }
   .section-title {
@@ -697,9 +701,6 @@
     border-radius: 50%;
     background: var(--wiom-text-hint);
   }
-  /* Case 2 — date proposed, not confirmed: hide context strip (chat already showed proposal),
-     keep grey dot on May 5 to mark the proposed day */
-  .screen[data-case="2"] .context-strip { display: none; }
   /* Case 3 — no date set yet: hide context strip AND the current-date dot */
   .screen[data-case="3"] .context-strip { display: none; }
   .screen[data-case="3"] .date-card.current::after { display: none; }
@@ -1160,7 +1161,7 @@
             <div class="msg-tail"></div>
             <div class="msg-bubble has-cta-below">
               <div class="msg-content">
-                <div class="msg-text">क्या 5 मई आपको ठीक लगेगा?</div>
+                <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> आपको ठीक लगेगा?</div>
                 <div class="msg-time">10:15 AM</div>
               </div>
             </div>
@@ -1184,7 +1185,7 @@
                 <div class="reply-quote-bar"></div>
                 <div class="reply-quote-text">
                   <div class="reply-quote-author">Wiom</div>
-                  <div class="reply-quote-msg">क्या 5 मई आपको ठीक लगेगा?</div>
+                  <div class="reply-quote-msg">क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?</div>
                 </div>
               </div>
               <div class="msg-content">
@@ -1201,7 +1202,9 @@
             <div class="msg-tail"></div>
             <div class="msg-bubble">
               <div class="msg-content">
-                <div class="msg-text">तारीख पक्की हो गई। <strong>5 मई</strong> को 10 से 2 बजे के बीच नेट लगेगा।</div>
+                <div class="msg-text">तारीख पक्की हो गई।</div>
+                <div class="msg-text">&nbsp;</div>
+                <div class="msg-text"><strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> नेट लगेगा।</div>
                 <div class="msg-time">10:15 AM</div>
               </div>
             </div>
@@ -1292,6 +1295,7 @@
         <div class="context-strip">
           <div class="context-strip-label">अभी तय है</div>
           <div class="context-strip-value">5 मई, मंगलवार</div>
+          <div class="context-strip-time">10 से 2 बजे के बीच</div>
         </div>
 
         <div class="section-block">
@@ -1368,7 +1372,7 @@
     intentSent: false,
     keyboardOpen: false,
     typed: false,
-    case: 1,   // 1 = reschedule (date already confirmed); 2 = first-time date pick
+    case: 1,
   };
 
   const contextScreen  = document.getElementById('contextScreen');
@@ -1526,12 +1530,29 @@
     chatScreen.classList.add('active');
     if (state.case === 2) setupCase2Chat();
     else if (state.case === 3) setupCase3Chat();
+    // Open chat scrolled to the latest message (instant, no smooth scroll)
+    chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'instant' });
   }
   function showPicker() {
     chatScreen.classList.remove('active');
     chatScreen.classList.add('left');
     pickerScreen.classList.add('active');
     pickerScreen.dataset.case = String(state.case);
+
+    // Update context strip content for the active case
+    const strip = pickerScreen.querySelector('.context-strip');
+    if (state.case === 1) {
+      strip.innerHTML = `
+        <div class="context-strip-label">अभी तय है</div>
+        <div class="context-strip-value">5 मई, मंगलवार</div>
+        <div class="context-strip-time">10 से 2 बजे के बीच</div>`;
+    } else if (state.case === 2) {
+      strip.innerHTML = `
+        <div class="context-strip-label">व्योम ने सुझाया था</div>
+        <div class="context-strip-value">5 मई, मंगलवार</div>
+        <div class="context-strip-time">10 से 2 बजे के बीच</div>`;
+    }
+    // case 3: strip stays hidden via CSS
   }
   function showChat() {
     pickerScreen.classList.remove('active');
@@ -1564,7 +1585,7 @@
         <div class="msg-tail"></div>
         <div class="msg-bubble has-cta-below">
           <div class="msg-content">
-            <div class="msg-text">क्या <strong>5 मई</strong> आपको ठीक लगेगा?</div>
+            <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> आपको ठीक लगेगा?</div>
             <div class="msg-time">10:15 AM</div>
           </div>
         </div>
@@ -1601,7 +1622,7 @@
       // User reply with quote
       setTimeout(() => {
         chatBody.appendChild(userReplyWithQuote(
-          'क्या 5 मई आपको ठीक लगेगा?',
+          'क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?',
           'यह दिन सही है',
           '10:16 AM'
         ));
@@ -1617,7 +1638,11 @@
         const w = document.getElementById('waitingBubble');
         if (w) w.remove();
         chatBody.appendChild(botBubble(
-          ['तारीख पक्की हो गई। <strong>5 मई</strong> को 10 से 2 बजे के बीच नेट लगेगा।'],
+          [
+            'तारीख पक्की हो गई।',
+            '&nbsp;',
+            '<strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> नेट लगेगा।'
+          ],
           '10:16 AM'
         ));
         chatBody.appendChild(botBubble(['अब आप आराम करें'], '10:16 AM', true));
@@ -1671,7 +1696,10 @@
     keyboard.classList.add('open');
 
     // simulate typed text — different per case
-    const intentText = state.case === 1 ? 'सेटअप का दिन बदलना है' : 'नेट लगवाने का दिन तय करना है';
+    let intentText;
+    if (state.case === 1) intentText = 'नेट लगवाने का दिन बदलना है';
+    else if (state.case === 2) intentText = 'यह दिन नहीं चलेगा';
+    else intentText = 'नेट लगवाने का दिन तय करना है';
     inputField.classList.remove('placeholder');
     inputField.innerHTML = `${intentText}<span class="caret"></span>`;
     state.typed = true;
@@ -1700,8 +1728,16 @@
     state.intentSent = true;
 
     // Add user bubble with the typed text (case-specific)
-    const userMsg = state.case === 1 ? 'सेटअप का दिन बदलना है' : 'नेट लगवाने का दिन तय करना है';
+    let userMsg;
+    if (state.case === 1) userMsg = 'नेट लगवाने का दिन बदलना है';
+    else if (state.case === 2) userMsg = 'यह दिन नहीं चलेगा';
+    else userMsg = 'नेट लगवाने का दिन तय करना है';
     chatBody.appendChild(userBubble(userMsg, '10:42 AM'));
+
+    // Case 2: when user types intent, mute the unanswered proposal CTAs above
+    if (state.case === 2) {
+      chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
+    }
 
     // Reset input + close keyboard
     inputField.innerHTML = 'यहाँ पूछें....';
@@ -1721,10 +1757,14 @@
       const waiting = document.getElementById('waitingBubble');
       if (waiting) waiting.remove();
 
-      const responseTexts = state.case === 1
-        ? ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके सेटअप का दिन बदलें।']
-        : ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।'];
-      const ctaLabel = state.case === 1 ? 'सेटअप का दिन बदलें' : 'नेट लगवाने का दिन चुनें';
+      let responseTexts, ctaLabel;
+      if (state.case === 1 || state.case === 2) {
+        responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'];
+        ctaLabel = 'नेट लगवाने का दिन बदलें';
+      } else {
+        responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।'];
+        ctaLabel = 'नेट लगवाने का दिन चुनें';
+      }
 
       const ctaRow = botBubbleWithCTA(
         responseTexts,
@@ -1785,9 +1825,13 @@
       if (state.activeCta) state.activeCta.classList.add('muted');
       let quotedBotMsg;
       if (state.case === 1) {
-        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके सेटअप का दिन बदलें।';
+        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
       } else if (state.case === 2) {
-        quotedBotMsg = 'क्या 5 मई आपको ठीक लगेगा?';
+        // Two paths: tapped existing CTA → quote the proposal
+        //            typed intent → quote the bot's typed-response (same as Case 1)
+        quotedBotMsg = state.intentSent
+          ? 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'
+          : 'क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?';
       } else {
         quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।';
       }
