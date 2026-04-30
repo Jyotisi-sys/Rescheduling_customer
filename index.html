@@ -1,0 +1,1783 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#D9008D" />
+<title>नेट सेटअप — व्योम</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Roboto:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+  :root {
+    /* === Wiom tokens === */
+    --wiom-bg-default: #FAF9FC;
+    --wiom-bg-subtle: #F1EDF7;
+    --wiom-bg-muted: #E8E4F0;
+    --wiom-bg-disabled: #D7D3E0;
+    --wiom-bg-selected: #FFCCED;
+    --wiom-bg-brand: #D9008D;
+    --wiom-bg-brand-hover: #C00080;
+    --wiom-bg-brand-subtle: #FFE5F6;
+    --wiom-bg-info-subtle: #F1E5FF;
+
+    --wiom-text-default: #161021;
+    --wiom-text-sec: #665E75;
+    --wiom-text-hint: #A7A1B2;
+    --wiom-text-disabled: #A7A1B2;
+    --wiom-text-on-brand: #FFFFFF;
+    --wiom-text-selected: #D9008D;
+    --wiom-text-brand: #D9008D;
+
+    --wiom-stroke-default: #E8E4F0;
+    --wiom-stroke-subtle: #D7D3E0;
+    --wiom-stroke-selected: #D9008D;
+
+    --wiom-icon-action: #352D42;
+    --wiom-icon-non-action: #A7A1B2;
+    --wiom-icon-brand: #D9008D;
+
+    /* chat-specific surfaces (per design) */
+    --chat-bg-pri: #FFFFFF;
+    --chat-bg-sec: #F5F6F7;
+    --chat-bubble-bot: #EBEDF0;
+    --chat-bubble-user: #FFFFFF;
+    --chat-quote-bar: #B6B9BF;
+    --chat-divider: #DCDEE0;
+
+    /* spacing */
+    --s-4: 4px;  --s-8: 8px;  --s-12: 12px; --s-16: 16px;
+    --s-24: 24px; --s-32: 32px; --s-40: 40px; --s-48: 48px; --s-72: 72px;
+
+    /* radius */
+    --r-tiny: 4px; --r-small: 8px; --r-medium: 12px;
+    --r-large: 16px; --r-xlarge: 24px; --r-full: 9999px;
+
+    /* shadow */
+    --sh-md: 0 2px 6px 0 rgba(0,0,0,0.15);
+    --sh-lg: 0 4px 12px 0 rgba(0,0,0,0.15);
+    --sh-xl: 0 8px 24px 0 rgba(0,0,0,0.15);
+
+    /* type */
+    --ff: 'Noto Sans', 'Noto Sans Devanagari', sans-serif;
+    --ff-roboto: 'Roboto', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--ff);
+    color: var(--wiom-text-default);
+    background: var(--wiom-bg-muted);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  button { font-family: inherit; cursor: pointer; }
+
+  /* ===== Stage ===== */
+  .stage {
+    height: 100vh; height: 100dvh;
+    width: 100vw;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .device {
+    width: 100%; height: 100%;
+    background: var(--chat-bg-pri);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  @media (min-width: 768px) {
+    .stage { padding: var(--s-32); }
+    .device {
+      width: 390px;
+      height: min(844px, 100%);
+      max-height: 844px;
+      border-radius: 40px;
+      box-shadow: var(--sh-xl), 0 0 0 8px #1f1830, 0 0 0 10px #2a2238;
+    }
+  }
+
+  /* ===== Screens ===== */
+  .screen {
+    position: absolute;
+    inset: 0;
+    display: flex; flex-direction: column;
+    background: var(--chat-bg-pri);
+    transform: translateX(100%);
+    transition: transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+  .screen.active { transform: translateX(0); }
+  .screen.left { transform: translateX(-100%); }
+
+  /* ===== Phone status bar (mock) ===== */
+  .status-bar {
+    flex: 0 0 auto;
+    height: 24px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--chat-bg-pri);
+    font-family: var(--ff-roboto);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--wiom-text-default);
+  }
+  .status-bar-icons {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-bar-icons .material-icons { font-size: 16px; }
+
+  /* ===== Chat top app bar ===== */
+  .chat-top-bar {
+    flex: 0 0 auto;
+    background: var(--chat-bg-pri);
+    border-bottom: 1px solid var(--wiom-stroke-default);
+    padding: var(--s-8) var(--s-4) var(--s-8) var(--s-12);
+    display: flex; gap: var(--s-4); align-items: center;
+  }
+  .chat-top-bar-left {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; gap: var(--s-8);
+    height: 48px;
+  }
+  .wiom-avatar {
+    width: 48px; height: 48px;
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wiom-avatar svg { width: 100%; height: 100%; display: block; }
+  .icon-btn svg { width: 48px; height: 48px; display: block; }
+  .chat-top-text {
+    display: flex; flex-direction: column; gap: var(--s-4);
+    min-width: 0;
+  }
+  .chat-top-name {
+    font-weight: 500; font-size: 14px; line-height: 20px;
+    color: var(--wiom-text-default);
+  }
+  .chat-top-status {
+    font-weight: 400; font-size: 10px; line-height: 14px;
+    color: var(--wiom-text-sec);
+  }
+  .chat-top-actions {
+    display: flex; align-items: center;
+  }
+  .icon-btn {
+    width: 48px; height: 48px;
+    background: transparent; border: none;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-large);
+    color: var(--wiom-icon-action);
+    flex: 0 0 auto;
+  }
+  .icon-btn:hover { background: var(--chat-bg-sec); }
+
+  /* ===== Sticky net card ===== */
+  .sticky-net {
+    flex: 0 0 auto;
+    background: var(--chat-bg-pri);
+    padding: var(--s-12) var(--s-16);
+    display: flex; justify-content: center;
+  }
+  .net-card {
+    width: 100%;
+    background: var(--wiom-bg-default);
+    border-radius: var(--r-large);
+    box-shadow: var(--sh-lg);
+    padding: var(--s-12);
+    display: flex; gap: var(--s-12); align-items: center;
+  }
+  .net-card-icon {
+    width: 24px; height: 24px;
+    flex: 0 0 auto;
+    color: var(--wiom-icon-action);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .net-card-icon .material-icons { font-size: 24px; }
+  .net-card-icon svg { width: 24px; height: 24px; display: block; }
+  .net-card-text {
+    flex: 1; display: flex; flex-direction: column; gap: var(--s-4);
+    min-width: 0;
+  }
+  .net-card-heading {
+    font-size: 12px; line-height: 16px;
+    color: var(--wiom-text-sec);
+    max-width: 176px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .net-card-status {
+    display: flex; gap: 4px; align-items: baseline;
+  }
+  .net-card-status-label {
+    font-size: 12px; line-height: 16px;
+    color: var(--wiom-text-sec);
+  }
+  .net-card-status-value {
+    font-size: 16px; line-height: 24px; font-weight: 600;
+    color: var(--wiom-text-default);
+  }
+
+  /* ===== Chat body ===== */
+  .chat-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    background: var(--chat-bg-sec);
+    padding: var(--s-16) var(--s-12) var(--s-12);
+    display: flex; flex-direction: column;
+    gap: var(--s-12);
+    scroll-behavior: smooth;
+    scrollbar-width: none;       /* Firefox */
+    -ms-overflow-style: none;    /* IE/legacy Edge */
+  }
+  .chat-body::-webkit-scrollbar { display: none; }  /* Chrome/Safari */
+
+  /* Designer annotation card (placeholder for prior chat) */
+  .prev-chat-card {
+    background: #FFDA40;
+    border-radius: 8px;
+    padding: var(--s-12) var(--s-16);
+    display: flex; flex-direction: column; gap: var(--s-8);
+    align-items: center;
+    text-align: center;
+    box-shadow: 0px 1px 1.5px rgba(0,0,0,0.15);
+    align-self: stretch;
+  }
+  .prev-chat-card-note {
+    font-size: 12px; line-height: 16px; font-weight: 400;
+    color: #D92130;
+  }
+  .prev-chat-card-text {
+    font-size: 16px; line-height: 24px; font-weight: 700;
+    color: #161021;
+  }
+  .prev-chat-card.restart { cursor: pointer; }
+
+  /* ===== Bubbles (match design) ===== */
+  .msg-row {
+    display: flex;
+    width: 100%;
+    animation: fadeUp 220ms ease-out;
+  }
+  .msg-row.bot { padding-left: var(--s-12); padding-right: var(--s-72); }
+  .msg-row.user { padding-left: var(--s-72); padding-right: var(--s-12); justify-content: flex-end; }
+
+  .msg-wrap {
+    position: relative;
+    max-width: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+  .msg-bubble {
+    padding: var(--s-4);
+    display: flex; flex-direction: column; gap: var(--s-4);
+  }
+  .msg-row.bot .msg-bubble {
+    background: var(--chat-bubble-bot);
+    border-radius: 0 var(--r-medium) var(--r-medium) var(--r-medium);
+    align-items: flex-end;
+  }
+  .msg-row.user .msg-bubble {
+    background: var(--chat-bubble-user);
+    border-radius: var(--r-medium) 0 var(--r-medium) var(--r-medium);
+    align-items: flex-end;
+  }
+  /* when CTA section follows, drop bottom corners */
+  .msg-row.bot .msg-bubble.has-cta-below {
+    border-radius: 0 var(--r-medium) 0 0;
+  }
+  /* follow-up bubbles (no notch) — fully rounded */
+  .msg-row.bot.follow-up .msg-bubble {
+    border-radius: var(--r-medium);
+  }
+  .msg-row.user.follow-up .msg-bubble {
+    border-radius: var(--r-medium);
+  }
+  .msg-row.follow-up .msg-tail { display: none; }
+  /* Bubble tail (notch) — 12x12 triangle attached to bubble's top corner */
+  .msg-tail {
+    position: absolute;
+    top: 0;
+    width: 12px; height: 12px;
+    pointer-events: none;
+  }
+  .msg-row.bot .msg-tail {
+    left: -12px;
+    background: var(--chat-bubble-bot);
+    clip-path: polygon(100% 0%, 100% 100%, 0% 0%);
+  }
+  .msg-row.user .msg-tail {
+    right: -12px;
+    background: var(--chat-bubble-user);
+    clip-path: polygon(0% 0%, 100% 0%, 0% 100%);
+  }
+
+  .msg-content {
+    padding: var(--s-8);
+    display: flex; flex-direction: column; gap: var(--s-4);
+    width: 100%;
+    align-items: flex-start;
+  }
+  .msg-text {
+    font-size: 14px; line-height: 20px; font-weight: 400;
+    color: var(--wiom-text-default);
+    max-width: 228px;
+  }
+  .msg-text.title {
+    font-weight: 700; font-size: 16px; line-height: 24px;
+  }
+  .msg-text strong, .msg-text .accent {
+    font-weight: 700;
+  }
+  .msg-time {
+    font-size: 10px; line-height: 1.2;
+    color: var(--wiom-text-hint);
+    align-self: flex-end;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .msg-time .material-icons {
+    font-size: 12px;
+    color: var(--wiom-text-hint);
+  }
+
+  /* Contact card bubble (follow-up bot bubble with phone + save CTA) */
+  .contact-card {
+    background: var(--chat-bubble-bot);
+    border-radius: var(--r-medium);
+    padding: 16px 0 12px;
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .contact-card-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 0 16px;
+  }
+  .contact-card-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--chat-bg-pri);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+  .contact-card-avatar .material-icons {
+    font-size: 24px;
+    color: var(--wiom-icon-action);
+  }
+  .contact-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .contact-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--wiom-text-default);
+  }
+  .contact-card-number {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--wiom-text-default);
+  }
+  .contact-card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+  .contact-card-divider {
+    height: 1px;
+    background: var(--chat-divider);
+    width: 100%;
+  }
+  .contact-card-cta {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: var(--wiom-text-brand);
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* Inline CTA — sibling of bubble, joined by divider line */
+  .msg-divider {
+    height: 1px;
+    background: var(--chat-divider);
+    width: 100%;
+  }
+  .msg-cta {
+    background: var(--chat-bubble-bot);
+    border: none;
+    width: 100%;
+    padding: var(--s-12) var(--s-8);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0 0 var(--r-medium) var(--r-medium);
+    cursor: pointer;
+  }
+  .msg-cta-text {
+    font-size: 14px; line-height: 20px; font-weight: 500;
+    color: var(--wiom-text-brand);
+    text-align: center;
+  }
+  /* greyed-out CTA — for past/already-actioned options */
+  .msg-cta.muted .msg-cta-text {
+    color: var(--wiom-text-hint);
+  }
+  .msg-cta.muted { cursor: default; pointer-events: none; }
+  /* middle CTA section (between two dividers): no rounded corners */
+  .msg-cta.middle {
+    border-radius: 0;
+  }
+
+  /* Reply with quote (user side) — sibling of msg-content inside msg-bubble */
+  .reply-quote {
+    background: var(--chat-bubble-bot);
+    border-radius: var(--r-small);
+    overflow: hidden;
+    display: flex; align-items: stretch;
+    width: 100%;
+  }
+  .reply-quote-bar {
+    background: var(--chat-quote-bar);
+    width: 4px;
+    flex: 0 0 auto;
+    border-radius: var(--r-small) 0 0 var(--r-small);
+  }
+  .reply-quote-text {
+    padding: var(--s-8);
+    display: flex; flex-direction: column; gap: var(--s-4);
+    min-width: 0;
+    flex: 1;
+  }
+  .reply-quote-author {
+    font-size: 12px; line-height: 16px; font-weight: 600;
+    color: var(--wiom-text-default);
+    max-width: 224px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .reply-quote-msg {
+    font-size: 12px; line-height: 16px; font-weight: 400;
+    color: var(--wiom-text-sec);
+    max-width: 224px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  /* user bubble inner alignment — start (text reads LTR) */
+  .msg-row.user .msg-bubble {
+    align-items: flex-start;
+  }
+
+  /* Typing bubble — bot is typing (matches Figma 1024:58689) */
+  .waiting-bubble {
+    padding: var(--s-12);
+    display: flex; align-items: center; gap: var(--s-8);
+    background: var(--chat-bubble-bot);
+    border-radius: 0 var(--r-medium) var(--r-medium) var(--r-medium);
+  }
+  .waiting-dots {
+    width: 36px; height: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .waiting-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--wiom-text-hint);
+    animation: dotPulse 1.2s ease-in-out infinite;
+  }
+  .waiting-dot:nth-child(2) { animation-delay: 0.15s; }
+  .waiting-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes dotPulse {
+    0%, 60%, 100% { opacity: 0.35; transform: scale(0.8); }
+    30% { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Chat input ===== */
+  .chat-input {
+    flex: 0 0 auto;
+    background: var(--chat-bg-pri);
+    padding: var(--s-12);
+    display: flex; gap: var(--s-8); align-items: flex-end;
+    position: relative;
+    z-index: 2;
+  }
+  .input-field {
+    flex: 1;
+    background: var(--chat-bg-pri);
+    border: 1px solid var(--wiom-stroke-default);
+    border-radius: var(--r-xlarge);
+    padding: var(--s-12) var(--s-16);
+    min-height: 48px;
+    display: flex; align-items: center;
+    font-size: 16px; line-height: 24px;
+    color: var(--wiom-text-default);
+    cursor: text;
+  }
+  .input-field.placeholder { color: var(--wiom-text-hint); }
+  .input-field .caret {
+    display: inline-block;
+    width: 1.5px;
+    height: 18px;
+    background: var(--wiom-bg-brand);
+    margin-left: 1px;
+    animation: caretBlink 1s steps(2) infinite;
+    vertical-align: middle;
+  }
+  @keyframes caretBlink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  .send-btn {
+    width: 48px; height: 48px;
+    border-radius: var(--r-xlarge);
+    background: var(--wiom-bg-brand);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFFFFF;
+    flex: 0 0 auto;
+  }
+  .send-btn:disabled {
+    background: var(--wiom-text-hint);
+    cursor: not-allowed;
+  }
+  .send-btn:not(:disabled):hover { background: var(--wiom-bg-brand-hover); }
+
+  /* ===== Keyboard mock (slides up) ===== */
+  .keyboard {
+    flex: 0 0 auto;
+    background: #D1D4DB;
+    height: 0;
+    overflow: hidden;
+    transition: height 220ms cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex; flex-direction: column;
+  }
+  .keyboard.open { height: 256px; }
+  .kb-suggestions {
+    height: 44px;
+    padding: 0 8px;
+    display: flex; align-items: center; gap: 8px;
+    background: #D1D4DB;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+  }
+  .kb-suggestions .kb-sg-icon {
+    width: 22px; height: 22px;
+    color: var(--wiom-text-default);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.7;
+  }
+  .kb-suggestions .kb-sg-icon .material-icons { font-size: 18px; }
+  .kb-rows {
+    flex: 1;
+    padding: 6px 4px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .kb-row {
+    display: flex; gap: 4px;
+    justify-content: center;
+  }
+  .kb-key {
+    flex: 1;
+    height: 36px;
+    background: #FFFFFF;
+    border-radius: 5px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 400;
+    color: var(--wiom-text-default);
+    max-width: 32px;
+  }
+  .kb-key.wide { max-width: 48px; }
+  .kb-key.space { max-width: none; flex: 4; }
+  .kb-key.modifier {
+    background: #ABAFB7;
+    color: var(--wiom-text-default);
+  }
+  .kb-key .material-icons { font-size: 18px; }
+
+  /* ===== Picker screen ===== */
+  .picker-header {
+    flex: 0 0 auto;
+    padding: var(--s-12) var(--s-16);
+    background: var(--chat-bg-pri);
+    border-bottom: 1px solid var(--wiom-stroke-default);
+    display: flex; align-items: center; gap: var(--s-12);
+  }
+  .picker-title {
+    font-weight: 500; font-size: 20px; line-height: 28px;
+  }
+
+  .picker-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: var(--s-16) var(--s-16) var(--s-32);
+    display: flex; flex-direction: column;
+    gap: var(--s-24);
+    background: var(--wiom-bg-default);
+  }
+
+  .context-strip {
+    background: var(--wiom-bg-info-subtle);
+    border-radius: var(--r-medium);
+    padding: var(--s-12) var(--s-16);
+    display: flex; flex-direction: column; gap: var(--s-4);
+  }
+  .context-strip-label {
+    font-size: 12px; line-height: 16px;
+    color: var(--wiom-text-sec);
+  }
+  .context-strip-value {
+    font-size: 14px; line-height: 20px; font-weight: 600;
+    color: var(--wiom-text-default);
+  }
+
+  .section-block { display: flex; flex-direction: column; gap: var(--s-12); }
+  .section-title {
+    font-weight: 700; font-size: 16px; line-height: 24px;
+    color: var(--wiom-text-default);
+  }
+  /* Time section — hidden until a date is picked */
+  .section-block.time-section { display: none; }
+  .section-block.time-section.visible {
+    display: flex;
+    animation: fadeUp 240ms ease-out;
+  }
+
+  .date-row {
+    display: flex; gap: var(--s-8);
+    overflow-x: auto;
+    margin: 0 calc(-1 * var(--s-16));
+    padding: var(--s-4) var(--s-16);
+    scrollbar-width: none;
+  }
+  .date-row::-webkit-scrollbar { display: none; }
+
+  .date-card {
+    flex: 0 0 auto;
+    width: 64px;
+    padding: var(--s-12) var(--s-8) 18px;
+    background: var(--chat-bg-pri);
+    border: 1px solid var(--wiom-stroke-subtle);
+    border-radius: var(--r-medium);
+    display: flex; flex-direction: column; align-items: center; gap: var(--s-4);
+    cursor: pointer;
+    position: relative;
+    transition: background 120ms, border-color 120ms;
+  }
+  /* Currently scheduled date — small neutral dot indicator at bottom */
+  .date-card.current::after {
+    content: "";
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--wiom-text-hint);
+  }
+  /* Case 2: no previously-set date, so hide context strip + current-date indicator */
+  .screen[data-case="2"] .context-strip { display: none; }
+  .screen[data-case="2"] .date-card.current::after { display: none; }
+  .date-card:hover { background: var(--chat-bg-sec); }
+  .date-card.selected {
+    background: var(--wiom-bg-selected);
+    border: 2px solid var(--wiom-stroke-selected);
+    padding: 11px 7px 17px;
+  }
+  .date-day { font-size: 12px; line-height: 16px; color: var(--wiom-text-sec); }
+  .date-num { font-size: 20px; line-height: 28px; font-weight: 700; color: var(--wiom-text-default); }
+  .date-card.selected .date-day,
+  .date-card.selected .date-num { color: var(--wiom-text-selected); }
+
+  .slot-grid { display: flex; flex-direction: column; gap: var(--s-12); }
+  .slot-card {
+    background: var(--chat-bg-pri);
+    border: 1px solid var(--wiom-stroke-subtle);
+    border-radius: var(--r-medium);
+    padding: var(--s-16);
+    display: flex; align-items: center; gap: var(--s-12);
+    cursor: pointer;
+    min-height: 64px;
+    transition: background 120ms, border-color 120ms;
+  }
+  .slot-card:hover { background: var(--chat-bg-sec); }
+  .slot-card.selected {
+    background: var(--wiom-bg-selected);
+    border: 2px solid var(--wiom-stroke-selected);
+    padding: 15px;
+  }
+  .slot-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--r-full);
+    background: var(--chat-bg-sec);
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .slot-card.selected .slot-icon { background: var(--chat-bg-pri); }
+  .slot-icon .material-icons { color: var(--wiom-icon-action); font-size: 20px; }
+  .slot-card.selected .slot-icon .material-icons { color: var(--wiom-icon-brand); }
+  .slot-text { flex: 1; display: flex; flex-direction: column; gap: var(--s-4); }
+  .slot-title { font-weight: 600; font-size: 16px; line-height: 24px; }
+  .slot-card.selected .slot-title { color: var(--wiom-text-selected); }
+  .slot-sub { font-size: 12px; line-height: 16px; color: var(--wiom-text-sec); }
+  .slot-check { display: none; }
+  .slot-card.selected .slot-check { display: block; }
+  .slot-check .material-icons { color: var(--wiom-icon-brand); font-size: 24px; }
+
+  .picker-footer {
+    flex: 0 0 auto;
+    padding: var(--s-16);
+    background: var(--chat-bg-pri);
+    border-top: 1px solid var(--wiom-stroke-default);
+    transform: translateY(120%);
+    transition: transform 240ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  .picker-footer.visible { transform: translateY(0); }
+  .btn-primary {
+    width: 100%;
+    background: var(--wiom-bg-brand);
+    color: #FFFFFF;
+    font-weight: 600; font-size: 16px; line-height: 24px;
+    border: none;
+    border-radius: var(--r-xlarge);
+    padding: var(--s-12) var(--s-24);
+    min-height: 48px;
+  }
+  .btn-primary:hover { background: var(--wiom-bg-brand-hover); }
+  .btn-primary:active { transform: scale(0.99); }
+
+  /* ===== Yellow context + scenario screens ===== */
+  .yellow-screen {
+    background: #FFD888;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .yellow-screen::-webkit-scrollbar { display: none; }
+
+  /* Context screen */
+  .context-content {
+    padding: 32px 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+  }
+  .context-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .context-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+  .context-avatar {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex: 0 0 auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #D9008D;
+  }
+  .context-avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .context-q {
+    font-weight: 800;
+    font-size: 14px;
+    line-height: 20px;
+    color: #565656;
+  }
+  .context-a {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 20px;
+    color: #D92B90;
+  }
+  .context-block {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .context-block ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #D92B90;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+  }
+  .context-block ul li::marker { color: #D92B90; }
+  .context-name {
+    font-size: 20px;
+    font-weight: 500;
+    color: #D92B90;
+    line-height: 28px;
+  }
+  .context-tag {
+    font-size: 12px;
+    font-weight: 500;
+    color: #000000;
+    line-height: 16px;
+  }
+  .context-cta-wrap {
+    flex: 0 0 auto;
+    padding: 24px 24px 24px;
+    position: sticky;
+    bottom: 0;
+    background: #FFD888;
+    box-shadow: 0px -6px 20px 0px #FFD888;
+  }
+  .btn-yellow-cta {
+    background: #444444;
+    color: #FFD888;
+    border: none;
+    border-radius: 16px;
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    width: 100%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.17);
+    cursor: pointer;
+  }
+  .btn-yellow-cta:active { transform: scale(0.98); }
+
+  /* Scenario chooser */
+  .scenario-content {
+    padding: 48px 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+  }
+  .scenario-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 30px;
+    color: #161021;
+    text-align: center;
+  }
+  .scenario-subtitle {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    color: #565656;
+    text-align: center;
+    margin-top: -16px;
+  }
+  .scenario-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 120ms;
+  }
+  .scenario-card:hover { transform: translateY(-2px); }
+  .scenario-card.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .scenario-card.disabled:hover { transform: none; }
+  .scenario-card-num {
+    font-size: 12px; font-weight: 700;
+    color: #D92B90;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .scenario-card.disabled .scenario-card-num { color: #A7A1B2; }
+  .scenario-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #161021;
+    line-height: 24px;
+  }
+  .scenario-card-desc {
+    font-size: 14px;
+    font-weight: 400;
+    color: #565656;
+    line-height: 20px;
+  }
+  .scenario-card-cta {
+    font-size: 14px;
+    font-weight: 600;
+    color: #D9008D;
+    margin-top: 8px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .scenario-card.disabled .scenario-card-cta {
+    color: #A7A1B2;
+  }
+  .scenario-card-cta .material-icons { font-size: 18px; }
+
+  /* ===== Hotspot hint area (Figma-style filled overlay) =====
+     A semi-transparent blue rectangle fills the tappable area, like Figma prototype. */
+  .hint-pulse {
+    position: relative;
+  }
+  .hint-pulse::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(59, 130, 246, 0.35);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 10;
+    animation: hintFade 0.9s ease-out 2;
+    opacity: 0;
+  }
+  @keyframes hintFade {
+    0%, 100% { opacity: 0; }
+    25%, 60% { opacity: 1; }
+  }
+
+  /* ===== Reset FAB ===== */
+  .reset-fab {
+    position: fixed;
+    bottom: 16px; right: 16px;
+    z-index: 1000;
+    background: #161021;
+    color: #FAF9FC;
+    border: none;
+    border-radius: var(--r-full);
+    padding: var(--s-8) var(--s-16);
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: var(--s-8);
+    box-shadow: var(--sh-md);
+    opacity: 0.85;
+  }
+  .reset-fab:hover { opacity: 1; }
+  .reset-fab .material-icons { font-size: 18px; }
+  @media (min-width: 768px) {
+    .reset-fab { bottom: 32px; right: 32px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="device">
+
+    <!-- ============ CONTEXT SCREEN (intro) ============ -->
+    <section class="screen active" id="contextScreen">
+      <div class="yellow-screen">
+        <div class="context-content">
+
+          <div class="context-header">
+            <div class="context-user-info">
+              <div class="context-q">यूजर कौन है?</div>
+              <div class="context-name">इन्दु वर्मा</div>
+              <div class="context-tag">वर्मा परिवार का एक सदस्य।</div>
+            </div>
+            <div class="context-avatar">
+              <img src="indu-verma.png" alt="इन्दु वर्मा">
+            </div>
+          </div>
+
+          <div class="context-block">
+            <div class="context-q">वर्मा जी इस स्क्रीन पर क्यों आए?</div>
+            <div class="context-a">जिस दिन सेटअप होना था, उसी दिन वर्मा जी को अचानक गाँव जाना पड़ रहा है। अब वो दिन बदलना चाहते हैं, बुकिंग कैंसिल किए बिना।</div>
+          </div>
+
+          <div class="context-block">
+            <div class="context-q">वर्मा जी इस स्टेप पर पहुँचने से पहले क्या कर रहे थे?</div>
+            <div class="context-a">वर्मा जी दिन भर अपनी दुकान पर थे। शाम को घर आ कर उन्होंने व्योम ऐप पर ₹100 का पेमेंट किया, SSID चुना, और पता-लोकेशन भर दी। उसी समय व्योम ने सेटअप का दिन भी तय कर दिया।</div>
+          </div>
+
+          <div class="context-block">
+            <div class="context-q">इस स्टेप के बाद वर्मा जी क्या करेंगे?</div>
+            <div class="context-a">वर्मा जी अपने हिसाब से नया दिन और समय चुन लेंगे। चैट में ही नया दिन पक्का हो जाएगा, और व्योम के इंजीनियर उसी दिन सेटअप करने आ जाएंगे।</div>
+          </div>
+
+          <div class="context-block">
+            <div class="context-q">वर्मा जी को कैसा महसूस होगा अगर यह दुनिया का सबसे बेहतरीन डिज़ाइन हो?</div>
+            <div class="context-a">वर्मा जी निश्चिंत होकर गाँव चले जाएंगे, यह सोचे बिना कि बुकिंग खराब तो नहीं हो गई। न कॉल करनी पड़ी, न फिर से बुक करना पड़ा — व्योम ने उनकी बात आसानी से समझ ली।</div>
+          </div>
+
+        </div>
+
+        <div class="context-cta-wrap">
+          <button class="btn-yellow-cta" id="contextNextBtn">Take me to the scenarios</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SCENARIO CHOOSER ============ -->
+    <section class="screen" id="scenarioScreen">
+      <div class="yellow-screen">
+        <div class="scenario-content">
+          <div class="scenario-title">Reschedule cases</div>
+
+          <div class="scenario-card" id="scenario1Card">
+            <div class="scenario-card-num">Case 1</div>
+            <div class="scenario-card-title">दिन कन्फर्म है</div>
+            <div class="scenario-card-desc">वर्मा जी का सेटअप का दिन तय हो चुका है। अब वो उसे बदलना चाहते हैं।</div>
+          </div>
+
+          <div class="scenario-card" id="scenario2Card">
+            <div class="scenario-card-num">Case 2</div>
+            <div class="scenario-card-title">दिन तय नहीं हुआ</div>
+            <div class="scenario-card-desc">व्योम से अभी तक कोई दिन तय नहीं हुआ। अब वर्मा जी खुद दिन तय करना चाहते हैं।</div>
+          </div>
+        </div>
+
+        <div class="context-cta-wrap">
+          <!-- spacer to keep bottom padding consistent -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CHAT SCREEN ============ -->
+    <section class="screen" id="chatScreen">
+
+      <!-- Phone status bar -->
+      <div class="status-bar">
+        <span>04:35 PM</span>
+        <div class="status-bar-icons">
+          <span class="material-icons">signal_wifi_4_bar</span>
+          <span class="material-icons">signal_cellular_4_bar</span>
+          <span style="font-size: 14px;">50%</span>
+          <span class="material-icons">battery_full</span>
+        </div>
+      </div>
+
+      <!-- Chat top app bar -->
+      <header class="chat-top-bar">
+        <div class="chat-top-bar-left">
+          <div class="wiom-avatar">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_wiom)">
+                <path d="M4 24C4 12.9543 12.9543 4 24 4C35.0457 4 44 12.9543 44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24Z" fill="#D9008D"/>
+                <rect x="4" y="4" width="40" height="40" fill="white"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M31.946 30.54C32.4232 30.5413 32.8103 30.928 32.8103 31.4033C32.8101 31.8798 32.4232 32.2656 31.946 32.2656C31.469 32.2655 31.0839 31.8797 31.0837 31.4033C31.0837 30.9269 31.4702 30.5402 31.946 30.54ZM15.0583 18.2197C15.7213 18.0974 16.4051 18.0943 17.0603 18.2012C17.7167 18.3055 18.3476 18.5092 18.9382 18.7783C19.5301 19.0462 20.0812 19.3841 20.5945 19.7666C20.6575 19.8141 20.726 19.8616 20.7839 19.9092L20.9626 20.0508C21.0826 20.1448 21.2017 20.2413 21.3191 20.3379C21.4377 20.4332 21.5539 20.531 21.6687 20.6289C21.7847 20.7268 21.8989 20.8253 22.0124 20.9258C22.9216 21.723 23.7771 22.5596 24.6218 23.3877C25.0422 23.8037 25.4605 24.2187 25.8796 24.627C26.3 25.0364 26.7165 25.4294 27.1472 25.8066C28.0022 26.5613 28.9052 27.2445 29.8699 27.6953C30.3509 27.922 30.8479 28.0763 31.3484 28.1445C31.5985 28.1767 31.8499 28.1861 32.1013 28.1758C32.3527 28.1629 32.6031 28.125 32.8532 28.0684C33.1034 28.013 33.3498 27.9266 33.5935 27.8301C33.7147 27.776 33.8381 27.7291 33.9568 27.666C34.016 27.6364 34.0791 27.6074 34.1345 27.5752L34.3034 27.4814C34.3614 27.4518 34.4144 27.4146 34.4685 27.3799C34.5213 27.3439 34.5781 27.3117 34.6296 27.2744C34.7315 27.1958 34.8401 27.1234 34.9343 27.0371C35.1341 26.8736 35.3107 26.6843 35.4782 26.4873C35.6433 26.2877 35.7868 26.0708 35.9197 25.8467C36.0434 25.6188 36.1581 25.3832 36.2419 25.1348C36.3258 24.8875 36.3982 24.6323 36.4343 24.3721L36.4509 24.2744L36.4607 24.1768C36.4671 24.1111 36.477 24.0451 36.4822 23.9795C36.4873 23.8481 36.4984 23.7153 36.4919 23.584C36.4945 23.4514 36.4795 23.3201 36.4704 23.1875C36.464 23.1218 36.4521 23.0559 36.4431 22.9902L36.4284 22.8906L36.3669 22.5977C36.3187 22.404 36.252 22.2147 36.1824 22.0264C36.1296 21.9042 36.0807 21.7782 36.0163 21.6611C35.9596 21.5388 35.8874 21.4248 35.8191 21.3076C35.6721 21.081 35.5106 20.861 35.3249 20.6602C35.1456 20.4528 34.9362 20.2715 34.7234 20.0938C34.668 20.0513 34.6118 20.0109 34.5564 19.9697C34.4996 19.9298 34.4448 19.8834 34.3855 19.8486L34.2107 19.7363L34.1228 19.6797L34.031 19.6299C33.546 19.3581 33.012 19.166 32.4509 19.0732C31.8912 18.9818 31.3083 18.9778 30.7331 19.0615C30.1553 19.1388 29.5852 19.2961 29.0281 19.4971C29.5477 19.2125 30.1047 18.9865 30.6863 18.8281C31.2692 18.6736 31.8823 18.6097 32.4988 18.6406C32.5761 18.6406 32.6528 18.6524 32.7302 18.6602C32.8074 18.6691 32.8847 18.674 32.9607 18.6855L33.1902 18.7266L33.3054 18.749L33.4187 18.7773L33.6452 18.8359C33.7213 18.8553 33.7941 18.885 33.8689 18.9082C33.9423 18.9352 34.0184 18.9564 34.0906 18.9873L34.3074 19.0781L34.4157 19.125L34.5202 19.1777L34.7292 19.2861C34.8 19.3209 34.8644 19.3657 34.9314 19.4043C34.9984 19.4455 35.0658 19.4858 35.1316 19.5283C35.3894 19.706 35.6462 19.8938 35.8757 20.1152C36.1117 20.329 36.3206 20.5741 36.5154 20.8291C36.6082 20.9604 36.704 21.0905 36.7839 21.2295C36.8716 21.3647 36.9438 21.5104 37.0173 21.6533C37.1552 21.9455 37.2772 22.2481 37.3572 22.5635L37.3894 22.6807L37.4157 22.8008C37.4325 22.8805 37.4517 22.959 37.4646 23.04C37.4878 23.201 37.5161 23.3628 37.5251 23.5264C37.5431 23.6885 37.5418 23.8522 37.5456 24.0156C37.5443 24.098 37.5407 24.1794 37.5368 24.2617L37.53 24.3838L37.5173 24.5059C37.489 24.8329 37.4194 25.155 37.3318 25.4717C37.2428 25.7898 37.1172 26.0954 36.9753 26.3955C36.8967 26.541 36.8247 26.691 36.7331 26.8301C36.6881 26.8995 36.6483 26.9732 36.5993 27.04L36.4548 27.2422C36.2524 27.5061 36.0341 27.7594 35.7878 27.9834C35.6692 28.1006 35.5365 28.2027 35.4089 28.3096C35.3432 28.3611 35.2748 28.4078 35.2077 28.458C35.1394 28.507 35.0716 28.5574 35.0007 28.5986L34.7878 28.7295C34.717 28.7732 34.6461 28.8078 34.574 28.8477C34.4334 28.9275 34.2835 28.9953 34.1365 29.0674C33.8362 29.1986 33.5267 29.319 33.2019 29.4053C32.8781 29.4916 32.544 29.5553 32.2048 29.585C31.8657 29.6133 31.5241 29.6067 31.1863 29.5732C30.5117 29.5011 29.8612 29.3113 29.2654 29.0498C29.1145 28.9867 28.9697 28.9146 28.824 28.8438C28.7519 28.8077 28.6819 28.7697 28.6111 28.7324C28.5402 28.6951 28.4704 28.6564 28.4021 28.6152C28.1236 28.4582 27.8594 28.2854 27.6003 28.1104C27.0844 27.7549 26.5985 27.3716 26.1355 26.9736C25.6737 26.5756 25.2268 26.1586 24.7986 25.7451C24.3691 25.3317 23.9446 24.9157 23.5241 24.501C22.6858 23.669 21.8525 22.8493 20.9909 22.0791C20.884 21.9826 20.7759 21.8859 20.6677 21.792C20.5594 21.6967 20.4511 21.6025 20.3415 21.5098C20.232 21.4171 20.1223 21.3245 20.0115 21.2344L19.8445 21.0996C19.789 21.0532 19.7365 21.0152 19.6823 20.9727C19.253 20.6418 18.7925 20.3535 18.3142 20.1191C17.3572 19.6503 16.3042 19.4271 15.2956 19.5752C15.1681 19.5855 15.0456 19.623 14.9206 19.6475L14.8259 19.668C14.795 19.6744 14.765 19.6873 14.7341 19.6963L14.5515 19.7549L14.4597 19.7832C14.4289 19.7922 14.3994 19.8078 14.3698 19.8193L14.1872 19.8955C14.0649 19.9418 13.9476 20.0043 13.8279 20.0596C13.3585 20.2888 12.9498 20.6058 12.6003 20.9805C12.5539 21.0255 12.5156 21.077 12.4743 21.126C12.4345 21.1761 12.39 21.2228 12.3552 21.2754C12.2818 21.3809 12.2028 21.4829 12.1384 21.5947C12.0675 21.7016 12.0105 21.8193 11.9499 21.9326C11.919 21.9893 11.8969 22.0514 11.8698 22.1094C11.8441 22.1684 11.8159 22.2275 11.7966 22.2891L11.7302 22.4736C11.7096 22.5354 11.6948 22.599 11.6755 22.6621L11.6482 22.7559C11.6404 22.788 11.6341 22.8204 11.6277 22.8525L11.5857 23.0459C11.5444 23.3059 11.5124 23.5685 11.5124 23.835C11.5124 24.1003 11.5282 24.3688 11.5759 24.6328C11.594 24.7653 11.6286 24.8952 11.657 25.0264C11.6737 25.092 11.6946 25.1551 11.7126 25.2207L11.7409 25.3174C11.7513 25.3496 11.7625 25.3809 11.7741 25.4131L11.8425 25.6035L11.9626 25.8818L12.0095 25.9717L12.1023 26.1523L12.2068 26.3271C12.2248 26.3555 12.2401 26.3867 12.2595 26.415L12.3171 26.499C12.3557 26.5543 12.3934 26.612 12.4333 26.666L12.5603 26.8271C12.6002 26.8825 12.6467 26.9332 12.6931 26.9834C12.7394 27.0335 12.7832 27.086 12.8308 27.1348L12.9782 27.2783C13.0025 27.3013 13.0269 27.3266 13.0525 27.3496L13.1316 27.417L13.2888 27.5508L13.4548 27.6738L13.5388 27.7354C13.5672 27.756 13.597 27.7727 13.6267 27.792L13.8025 27.9043C14.2796 28.1914 14.8138 28.393 15.3669 28.5205C15.9227 28.6402 16.503 28.6685 17.0769 28.6016C17.6403 28.541 18.2064 28.3624 18.7312 28.0869C18.254 28.4397 17.6958 28.6911 17.1091 28.8418C16.5184 28.9809 15.9005 29.0179 15.2878 28.9561C14.6752 28.8891 14.0689 28.7204 13.5027 28.4512C13.3648 28.3778 13.2191 28.3137 13.0876 28.2275L12.8845 28.1035L12.5945 27.8984C12.5636 27.874 12.5325 27.8486 12.5017 27.8242L12.3171 27.6738C12.2578 27.621 12.2016 27.5648 12.1423 27.5107C12.0844 27.4568 12.0261 27.4031 11.9734 27.3428C11.086 26.4232 10.5518 25.1683 10.4743 23.8701C10.3853 22.5744 10.8009 21.2162 11.6599 20.1807C12.0905 19.6696 12.6153 19.2295 13.1941 18.9102C13.3385 18.8329 13.4794 18.7512 13.6316 18.6855L13.8562 18.583C13.8935 18.5663 13.9295 18.5464 13.9695 18.5322L14.0886 18.4902L14.3259 18.4053C14.3657 18.3924 14.4042 18.3755 14.4441 18.3652L14.5671 18.333C14.7309 18.2931 14.892 18.2416 15.0583 18.2197ZM15.9499 15.457C16.427 15.4583 16.814 15.8429 16.8142 16.3193C16.8142 16.7959 16.4272 17.1826 15.9499 17.1826C15.4728 17.1825 15.0876 16.7958 15.0876 16.3193C15.0878 15.843 15.4742 15.4572 15.9499 15.457Z" fill="#D9008D"/>
+              </g>
+              <path d="M24 4.5C34.7696 4.5 43.5 13.2304 43.5 24C43.5 34.7696 34.7696 43.5 24 43.5C13.2304 43.5 4.5 34.7696 4.5 24C4.5 13.2304 13.2304 4.5 24 4.5Z" stroke="#E8E4F0"/>
+              <defs>
+                <clipPath id="clip0_wiom">
+                  <path d="M4 24C4 12.9543 12.9543 4 24 4C35.0457 4 44 12.9543 44 24C44 35.0457 35.0457 44 24 44C12.9543 44 4 35.0457 4 24Z" fill="white"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </div>
+          <div class="chat-top-text">
+            <div class="chat-top-name">व्योम</div>
+            <div class="chat-top-status">ऑनलाइन</div>
+          </div>
+        </div>
+        <div class="chat-top-actions">
+          <button class="icon-btn" aria-label="Call">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_call)">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M18.7059 13C21.1049 13.0001 22.4374 14.1666 22.704 16.499L23.0038 19.0977C23.1371 20.3639 22.7705 21.4305 21.9042 22.2969L21.1044 23.0967C22.104 24.6295 23.3704 25.8959 24.9032 26.8955L25.6034 26.0957C26.5364 25.2293 27.636 24.8628 28.9022 24.9961L31.4012 25.2959C33.8003 25.5625 34.9999 26.8619 34.9999 29.1943V30.9941C34.9998 32.1269 34.5663 33.06 33.7001 33.793C32.9004 34.6591 31.9343 35.0587 30.8016 34.9922C26.0034 34.659 21.9045 32.7932 18.5057 29.3945C15.1736 26.0624 13.3409 21.9966 13.0077 17.1982C12.9411 16.0654 13.3076 15.0655 14.1073 14.1992C14.9069 13.3998 15.8731 13.0001 17.0057 13H18.7059ZM17.0282 15.0098C15.8989 15.0099 14.9595 15.9488 15.0292 17.0781C15.559 25.6151 22.3869 32.4331 30.9139 32.9629C32.0434 33.0327 32.9832 32.0933 32.9833 30.9639V29.2344C32.9933 28.2247 32.2331 27.3748 31.2235 27.2549L28.6844 26.9648C28.0746 26.8949 27.4746 27.1053 27.0448 27.5352L25.2059 29.374C22.3769 27.9345 20.0575 25.6251 18.618 22.7861L20.4676 20.9375C20.8975 20.5077 21.1069 19.9076 21.037 19.2979L20.7469 16.7783C20.6268 15.7689 19.7772 15.0098 18.7577 15.0098H17.0282Z" fill="#352D42"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_call">
+                  <rect width="24" height="24" fill="white" transform="translate(12 12)"/>
+                </clipPath>
+              </defs>
+            </svg>
+          </button>
+          <button class="icon-btn" aria-label="More"><span class="material-icons">more_vert</span></button>
+        </div>
+      </header>
+
+      <!-- Sticky net card (no date) -->
+      <div class="sticky-net">
+        <div class="net-card">
+          <div class="net-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <g clip-path="url(#clip0_home_net)">
+                <path d="M10.7998 1.40049C11.5109 0.867155 12.4891 0.867155 13.2002 1.40049L21.2002 7.16904C21.7036 7.54674 22 8.13928 22 8.76865V20.0001C22 21.1046 21.1046 22.0001 20 22.0001H4C2.89545 22.0001 2.00003 21.1046 2 20.0001V8.76865C2.00003 8.13928 2.29638 7.54674 2.7998 7.16904L10.7998 1.40049ZM4 8.76865V20.0001H20V8.76865L12 3.0001L4 8.76865ZM8 12.9991C8.55333 12.9991 9 13.4458 9 13.9991V16.9981C9 17.5515 8.55333 17.9981 8 17.9981C7.44667 17.9981 7 17.5515 7 16.9981V13.9991C7 13.4458 7.44667 12.9991 8 12.9991ZM12 10.9981C12.5532 10.9981 12.9998 11.445 13 11.9981V16.9981C13 17.5515 12.5533 17.9981 12 17.9981C11.4467 17.9981 11 17.5515 11 16.9981V11.9981C11.0002 11.445 11.4468 10.9981 12 10.9981ZM16 8.99814C16.5532 8.99814 16.9998 9.44502 17 9.99814V16.9981C17 17.5515 16.5533 17.9981 16 17.9981C15.4467 17.9981 15 17.5515 15 16.9981V9.99814C15.0002 9.44502 15.4468 8.99814 16 8.99814Z" fill="#A7A1B2"/>
+              </g>
+              <defs>
+                <clipPath id="clip0_home_net"><rect width="24" height="24" fill="white"/></clipPath>
+              </defs>
+            </svg>
+          </div>
+          <div class="net-card-text">
+            <div class="net-card-heading">घर का नेट: वर्मा जी</div>
+            <div class="net-card-status">
+              <span class="net-card-status-label">स्थिति:</span>
+              <span class="net-card-status-value">सेटअप बाकी है</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat body -->
+      <div class="chat-body" id="chatBody">
+
+        <!-- Previous chat placeholder (designer annotation) -->
+        <div class="prev-chat-card">
+          <div class="prev-chat-card-note">This is not part of design</div>
+          <div class="prev-chat-card-text">keep the previous chat history as is</div>
+        </div>
+
+        <!-- Bot: date question with two inline CTAs (notch on first) -->
+        <div class="msg-row bot">
+          <div class="msg-wrap">
+            <div class="msg-tail"></div>
+            <div class="msg-bubble has-cta-below">
+              <div class="msg-content">
+                <div class="msg-text">क्या 5 मई आपको ठीक लगेगा?</div>
+                <div class="msg-time">10:15 AM</div>
+              </div>
+            </div>
+            <div class="msg-divider"></div>
+            <div class="msg-cta muted middle">
+              <span class="msg-cta-text">यह दिन सही है</span>
+            </div>
+            <div class="msg-divider"></div>
+            <div class="msg-cta muted">
+              <span class="msg-cta-text">कोई अन्य दिन चुनें</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- User: reply with quote + sent tick (notch on right) -->
+        <div class="msg-row user">
+          <div class="msg-wrap">
+            <div class="msg-tail"></div>
+            <div class="msg-bubble">
+              <div class="reply-quote">
+                <div class="reply-quote-bar"></div>
+                <div class="reply-quote-text">
+                  <div class="reply-quote-author">Wiom</div>
+                  <div class="reply-quote-msg">क्या 5 मई आपको ठीक लगेगा?</div>
+                </div>
+              </div>
+              <div class="msg-content">
+                <div class="msg-text">यह दिन सही है</div>
+                <div class="msg-time">10:15 AM <span class="material-icons">done_all</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bot: confirmation (notch — first in group) -->
+        <div class="msg-row bot">
+          <div class="msg-wrap">
+            <div class="msg-tail"></div>
+            <div class="msg-bubble">
+              <div class="msg-content">
+                <div class="msg-text">तारीख पक्की हो गई। <strong>5 मई</strong> को नेट लगेगा।</div>
+                <div class="msg-time">10:15 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bot: follow-up (no notch — fully rounded) -->
+        <div class="msg-row bot follow-up">
+          <div class="msg-wrap">
+            <div class="msg-bubble">
+              <div class="msg-content">
+                <div class="msg-text">अब आप आराम करें</div>
+                <div class="msg-time">10:15 AM</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Chat input -->
+      <div class="chat-input">
+        <div class="input-field placeholder" id="inputField">यहाँ पूछें....</div>
+        <button class="send-btn" id="sendBtn" aria-label="Send" disabled><span class="material-icons">send</span></button>
+      </div>
+
+      <!-- Keyboard mock -->
+      <div class="keyboard" id="keyboard">
+        <div class="kb-suggestions">
+          <div class="kb-sg-icon"><span class="material-icons">arrow_back_ios</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">gif</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">settings</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">translate</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">emoji_emotions</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">more_horiz</span></div>
+          <div class="kb-sg-icon"><span class="material-icons">mic</span></div>
+        </div>
+        <div class="kb-rows">
+          <div class="kb-row">
+            <div class="kb-key">q</div><div class="kb-key">w</div><div class="kb-key">e</div>
+            <div class="kb-key">r</div><div class="kb-key">t</div><div class="kb-key">y</div>
+            <div class="kb-key">u</div><div class="kb-key">i</div><div class="kb-key">o</div>
+            <div class="kb-key">p</div>
+          </div>
+          <div class="kb-row" style="padding: 0 18px;">
+            <div class="kb-key">a</div><div class="kb-key">s</div><div class="kb-key">d</div>
+            <div class="kb-key">f</div><div class="kb-key">g</div><div class="kb-key">h</div>
+            <div class="kb-key">j</div><div class="kb-key">k</div><div class="kb-key">l</div>
+          </div>
+          <div class="kb-row">
+            <div class="kb-key wide modifier"><span class="material-icons">arrow_upward</span></div>
+            <div class="kb-key">z</div><div class="kb-key">x</div><div class="kb-key">c</div>
+            <div class="kb-key">v</div><div class="kb-key">b</div><div class="kb-key">n</div>
+            <div class="kb-key">m</div>
+            <div class="kb-key wide modifier"><span class="material-icons">backspace</span></div>
+          </div>
+          <div class="kb-row">
+            <div class="kb-key wide modifier" style="font-size: 12px;">?123</div>
+            <div class="kb-key modifier" style="font-size: 12px;">,</div>
+            <div class="kb-key modifier"><span class="material-icons">language</span></div>
+            <div class="kb-key space"></div>
+            <div class="kb-key modifier" style="font-size: 12px;">.</div>
+            <div class="kb-key wide modifier"><span class="material-icons">keyboard_return</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PICKER SCREEN ============ -->
+    <section class="screen" id="pickerScreen">
+
+      <div class="status-bar">
+        <span>04:36 PM</span>
+        <div class="status-bar-icons">
+          <span class="material-icons">signal_wifi_4_bar</span>
+          <span class="material-icons">signal_cellular_4_bar</span>
+          <span style="font-size: 14px;">50%</span>
+          <span class="material-icons">battery_full</span>
+        </div>
+      </div>
+
+      <header class="picker-header">
+        <button class="icon-btn" id="pickerBack" aria-label="Back"><span class="material-icons">arrow_back</span></button>
+        <div class="picker-title">नेट कब लगवाना चाहते हैं?</div>
+      </header>
+
+      <div class="picker-body">
+        <div class="context-strip">
+          <div class="context-strip-label">अभी तय है</div>
+          <div class="context-strip-value">5 मई, मंगलवार</div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">मई, 2026</div>
+          <div class="date-row" id="dateRow">
+            <div class="date-card" data-date="1 मई" data-day="शुक्रवार">
+              <div class="date-day">शुक्र</div><div class="date-num">1</div>
+            </div>
+            <div class="date-card" data-date="2 मई" data-day="शनिवार">
+              <div class="date-day">शनि</div><div class="date-num">2</div>
+            </div>
+            <div class="date-card" data-date="3 मई" data-day="रविवार">
+              <div class="date-day">रवि</div><div class="date-num">3</div>
+            </div>
+            <div class="date-card" data-date="4 मई" data-day="सोमवार">
+              <div class="date-day">सोम</div><div class="date-num">4</div>
+            </div>
+            <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
+              <div class="date-day">मंगल</div><div class="date-num">5</div>
+            </div>
+            <div class="date-card" data-date="6 मई" data-day="बुधवार">
+              <div class="date-day">बुध</div><div class="date-num">6</div>
+            </div>
+            <div class="date-card" data-date="7 मई" data-day="गुरुवार">
+              <div class="date-day">गुरु</div><div class="date-num">7</div>
+            </div>
+            <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
+              <div class="date-day">शुक्र</div><div class="date-num">8</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block time-section" id="timeSection">
+          <div class="section-title">समय</div>
+          <div class="slot-grid" id="slotGrid">
+            <div class="slot-card" data-slot="10 से 2 बजे तक" data-slot-name="सुबह">
+              <div class="slot-icon"><span class="material-icons">wb_sunny</span></div>
+              <div class="slot-text">
+                <div class="slot-title">सुबह</div>
+                <div class="slot-sub">10 से 2 बजे तक</div>
+              </div>
+              <div class="slot-check"><span class="material-icons">check_circle</span></div>
+            </div>
+            <div class="slot-card" data-slot="2 से 6 बजे तक" data-slot-name="दोपहर">
+              <div class="slot-icon"><span class="material-icons">wb_twilight</span></div>
+              <div class="slot-text">
+                <div class="slot-title">दोपहर</div>
+                <div class="slot-sub">2 से 6 बजे तक</div>
+              </div>
+              <div class="slot-check"><span class="material-icons">check_circle</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="picker-footer" id="pickerFooter">
+        <button class="btn-primary" id="confirmBtn">कन्फर्म करें</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<button class="reset-fab" id="resetBtn" aria-label="Reset">
+  <span class="material-icons">refresh</span>
+  <span>Reset</span>
+</button>
+
+<script>
+  const state = {
+    selectedDate: null,
+    selectedDay: null,
+    selectedSlot: null,
+    intentSent: false,
+    keyboardOpen: false,
+    typed: false,
+    case: 1,   // 1 = reschedule (date already confirmed); 2 = first-time date pick
+  };
+
+  const contextScreen  = document.getElementById('contextScreen');
+  const scenarioScreen = document.getElementById('scenarioScreen');
+  const chatScreen     = document.getElementById('chatScreen');
+  const pickerScreen   = document.getElementById('pickerScreen');
+  const chatBody       = document.getElementById('chatBody');
+  const sendBtn        = document.getElementById('sendBtn');
+  const inputField     = document.getElementById('inputField');
+  const keyboard       = document.getElementById('keyboard');
+  const pickerBack     = document.getElementById('pickerBack');
+  const dateRow        = document.getElementById('dateRow');
+  const slotGrid       = document.getElementById('slotGrid');
+  const pickerFooter   = document.getElementById('pickerFooter');
+  const confirmBtn     = document.getElementById('confirmBtn');
+  const resetBtn       = document.getElementById('resetBtn');
+  const contextNextBtn = document.getElementById('contextNextBtn');
+  const scenario1Card  = document.getElementById('scenario1Card');
+  const scenario2Card  = document.getElementById('scenario2Card');
+  const device         = document.querySelector('.device');
+
+  function scrollChatToBottom() {
+    requestAnimationFrame(() => { chatBody.scrollTop = chatBody.scrollHeight; });
+  }
+
+  function userBubble(text, time, followUp) {
+    const row = document.createElement('div');
+    row.className = 'msg-row user' + (followUp ? ' follow-up' : '');
+    row.innerHTML = `
+      <div class="msg-wrap">
+        ${followUp ? '' : '<div class="msg-tail"></div>'}
+        <div class="msg-bubble">
+          <div class="msg-content">
+            <div class="msg-text">${text}</div>
+            <div class="msg-time">${time} <span class="material-icons">done_all</span></div>
+          </div>
+        </div>
+      </div>`;
+    return row;
+  }
+
+  function botBubble(htmlBlocks, time, followUp) {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot' + (followUp ? ' follow-up' : '');
+    const content = htmlBlocks.map(t => `<div class="msg-text">${t}</div>`).join('');
+    row.innerHTML = `
+      <div class="msg-wrap">
+        ${followUp ? '' : '<div class="msg-tail"></div>'}
+        <div class="msg-bubble">
+          <div class="msg-content">
+            ${content}
+            <div class="msg-time">${time}</div>
+          </div>
+        </div>
+      </div>`;
+    return row;
+  }
+
+  function contactCardBubble(name, number, ctaLabel) {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot follow-up';
+    row.innerHTML = `
+      <div class="msg-wrap">
+        <div class="contact-card">
+          <div class="contact-card-header">
+            <div class="contact-card-avatar">
+              <span class="material-icons">person</span>
+            </div>
+            <div class="contact-card-info">
+              <div class="contact-card-name">${name}</div>
+              <div class="contact-card-number">${number}</div>
+            </div>
+          </div>
+          <div class="contact-card-footer">
+            <div class="contact-card-divider"></div>
+            <div class="contact-card-cta">${ctaLabel}</div>
+          </div>
+        </div>
+      </div>`;
+    return row;
+  }
+
+  function userReplyWithQuote(quotedText, replyText, time) {
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `
+      <div class="msg-wrap">
+        <div class="msg-tail"></div>
+        <div class="msg-bubble">
+          <div class="reply-quote">
+            <div class="reply-quote-bar"></div>
+            <div class="reply-quote-text">
+              <div class="reply-quote-author">Wiom</div>
+              <div class="reply-quote-msg">${quotedText}</div>
+            </div>
+          </div>
+          <div class="msg-content">
+            <div class="msg-text">${replyText}</div>
+            <div class="msg-time">${time} <span class="material-icons">done_all</span></div>
+          </div>
+        </div>
+      </div>`;
+    return row;
+  }
+
+  function botBubbleWithCTA(htmlBlocks, time, ctaLabel, onClick) {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    const content = htmlBlocks.map(t => `<div class="msg-text">${t}</div>`).join('');
+    row.innerHTML = `
+      <div class="msg-wrap">
+        <div class="msg-tail"></div>
+        <div class="msg-bubble has-cta-below">
+          <div class="msg-content">
+            ${content}
+            <div class="msg-time">${time}</div>
+          </div>
+        </div>
+        <div class="msg-divider"></div>
+        <button class="msg-cta">
+          <span class="msg-cta-text">${ctaLabel}</span>
+        </button>
+      </div>`;
+    row.querySelector('.msg-cta').addEventListener('click', onClick);
+    return row;
+  }
+
+  function waitingBubble() {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'waitingBubble';
+    row.innerHTML = `
+      <div class="msg-wrap">
+        <div class="msg-tail"></div>
+        <div class="waiting-bubble">
+          <div class="waiting-dots">
+            <span class="waiting-dot"></span>
+            <span class="waiting-dot"></span>
+            <span class="waiting-dot"></span>
+          </div>
+        </div>
+      </div>`;
+    return row;
+  }
+
+  function showScenario() {
+    contextScreen.classList.remove('active');
+    contextScreen.classList.add('left');
+    scenarioScreen.classList.add('active');
+  }
+  function startChat() {
+    scenarioScreen.classList.remove('active');
+    scenarioScreen.classList.add('left');
+    chatScreen.classList.add('active');
+    if (state.case === 2) setupCase2Chat();
+  }
+  function showPicker() {
+    chatScreen.classList.remove('active');
+    chatScreen.classList.add('left');
+    pickerScreen.classList.add('active');
+    pickerScreen.dataset.case = String(state.case);
+  }
+  function showChat() {
+    pickerScreen.classList.remove('active');
+    chatScreen.classList.remove('left');
+    chatScreen.classList.add('active');
+  }
+
+  contextNextBtn.addEventListener('click', showScenario);
+  scenario1Card.addEventListener('click', () => { state.case = 1; startChat(); });
+  scenario2Card.addEventListener('click', () => { state.case = 2; startChat(); });
+
+  // Build initial chat content for Case 2 (no date set yet)
+  function setupCase2Chat() {
+    chatBody.innerHTML = '';
+
+    // Yellow placeholder card (designer annotation)
+    const prevCard = document.createElement('div');
+    prevCard.className = 'prev-chat-card';
+    prevCard.innerHTML = `
+      <div class="prev-chat-card-note">This is not part of design</div>
+      <div class="prev-chat-card-text">keep the previous chat history as is</div>
+    `;
+    chatBody.appendChild(prevCard);
+
+    // Bot: booking registered
+    chatBody.appendChild(botBubble(['आपकी बुकिंग दर्ज हो गई है।'], '10:15 AM'));
+
+    // Bot: heads-up about Wiom calling (follow-up — same speaker, no notch)
+    chatBody.appendChild(botBubble(
+      ['सेटअप के समय के लिए व्योम से कॉल आ सकता है।'],
+      '10:15 AM',
+      true
+    ));
+
+    // Bot: contact card with Wiom number + Save number CTA (follow-up)
+    chatBody.appendChild(contactCardBubble('Wiom', '+91 88803 22222', 'नंबर सेव करें'));
+  }
+
+  function openKeyboard() {
+    if (state.keyboardOpen) return;
+    state.keyboardOpen = true;
+    keyboard.classList.add('open');
+
+    // simulate typed text — different per case
+    const intentText = state.case === 1 ? 'सेटअप का दिन बदलना है' : 'नेट लगवाने का दिन तय करना है';
+    inputField.classList.remove('placeholder');
+    inputField.innerHTML = `${intentText}<span class="caret"></span>`;
+    state.typed = true;
+
+    // enable send button
+    sendBtn.disabled = false;
+
+    // Continuously snap chat to bottom while keyboard slides in — no perceived delay
+    const startTime = performance.now();
+    function tick(now) {
+      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'instant' });
+      if (now - startTime < 280) {
+        requestAnimationFrame(tick);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function closeKeyboard() {
+    state.keyboardOpen = false;
+    keyboard.classList.remove('open');
+  }
+
+  function sendIntent() {
+    if (state.intentSent || !state.typed) return;
+    state.intentSent = true;
+
+    // Add user bubble with the typed text (case-specific)
+    const userMsg = state.case === 1 ? 'सेटअप का दिन बदलना है' : 'नेट लगवाने का दिन तय करना है';
+    chatBody.appendChild(userBubble(userMsg, '10:42 AM'));
+
+    // Reset input + close keyboard
+    inputField.innerHTML = 'यहाँ पूछें....';
+    inputField.classList.add('placeholder');
+    sendBtn.disabled = true;
+    closeKeyboard();
+    scrollChatToBottom();
+
+    // Show waiting bubble
+    setTimeout(() => {
+      chatBody.appendChild(waitingBubble());
+      scrollChatToBottom();
+    }, 360);
+
+    // Replace waiting with Wiom response (one bubble: text + inline CTA, joined by divider)
+    setTimeout(() => {
+      const waiting = document.getElementById('waitingBubble');
+      if (waiting) waiting.remove();
+
+      const responseTexts = state.case === 1
+        ? ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके सेटअप का दिन बदलें।']
+        : ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।'];
+      const ctaLabel = state.case === 1 ? 'सेटअप का दिन बदलें' : 'नेट लगवाने का दिन चुनें';
+
+      const ctaRow = botBubbleWithCTA(
+        responseTexts,
+        '10:42 AM',
+        ctaLabel,
+        showPicker
+      );
+      chatBody.appendChild(ctaRow);
+      state.activeCta = ctaRow.querySelector('.msg-cta');
+      scrollChatToBottom();
+    }, 1800);
+  }
+
+  sendBtn.addEventListener('click', sendIntent);
+  inputField.addEventListener('click', () => {
+    if (state.intentSent) return;
+    openKeyboard();
+  });
+
+  const timeSection = document.getElementById('timeSection');
+
+  dateRow.addEventListener('click', (e) => {
+    const card = e.target.closest('.date-card');
+    if (!card) return;
+    dateRow.querySelectorAll('.date-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.selectedDate = card.dataset.date;
+    state.selectedDay = card.dataset.day;
+    timeSection.classList.add('visible');
+    maybeShowConfirm();
+  });
+
+  slotGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.slot-card');
+    if (!card) return;
+    slotGrid.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    state.selectedSlot = card.dataset.slot;
+    maybeShowConfirm();
+  });
+
+  function maybeShowConfirm() {
+    if (state.selectedDate && state.selectedSlot) {
+      pickerFooter.classList.add('visible');
+    } else {
+      pickerFooter.classList.remove('visible');
+    }
+  }
+
+  pickerBack.addEventListener('click', showChat);
+
+  confirmBtn.addEventListener('click', () => {
+    showChat();
+
+    // 1. User reply bubble with quote of bot's earlier prompt + "✔️ हो गया"
+    //    Also mute the original CTA so it can't be tapped again
+    setTimeout(() => {
+      if (state.activeCta) state.activeCta.classList.add('muted');
+      const quotedBotMsg = state.case === 1
+        ? 'ठीक है। नीचे दिए गए बटन पर क्लिक करके सेटअप का दिन बदलें।'
+        : 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।';
+      chatBody.appendChild(userReplyWithQuote(
+        quotedBotMsg,
+        '✔️ हो गया',
+        '10:43 AM'
+      ));
+      scrollChatToBottom();
+    }, 400);
+
+    // 2. Wiom typing bubble
+    setTimeout(() => {
+      chatBody.appendChild(waitingBubble());
+      scrollChatToBottom();
+    }, 1200);
+
+    // 3. Replace typing bubble with Wiom's response (new date + slot confirmation)
+    setTimeout(() => {
+      const waiting = document.getElementById('waitingBubble');
+      if (waiting) waiting.remove();
+
+      // In response text, phrase slot as "X से Y बजे के बीच" instead of "तक"
+      const slotInResponse = state.selectedSlot.replace('तक', 'के बीच');
+
+      const headerLine = state.case === 1 ? 'नया दिन पक्का हो गया।' : 'दिन पक्का हो गया।';
+      chatBody.appendChild(botBubble(
+        [
+          headerLine,
+          '&nbsp;',
+          `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
+        ],
+        '10:43 AM'
+      ));
+      chatBody.appendChild(botBubble(
+        ['अब आप आराम करें'],
+        '10:43 AM',
+        true
+      ));
+      scrollChatToBottom();
+    }, 2900);
+
+    // 4. Append yellow inline annotation card at the bottom of chat to mark end-of-flow
+    //    Tapping this card restarts the prototype.
+    setTimeout(() => {
+      const endCard = document.createElement('div');
+      endCard.className = 'prev-chat-card restart';
+      endCard.innerHTML = `
+        <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
+        <div class="prev-chat-card-text">Partner will receive the new slot and assign the engineer → Rest of the flow will be same as of today</div>
+      `;
+      endCard.addEventListener('click', () => location.reload());
+      chatBody.appendChild(endCard);
+      scrollChatToBottom();
+    }, 5000);
+  });
+
+  resetBtn.addEventListener('click', () => location.reload());
+
+  // ===== Figma-style tap hint — pulse current hotspots when user taps empty area =====
+  const hotspotSelector = '.input-field, .send-btn, .icon-btn, .msg-cta:not(.muted), .date-card, .slot-card, .btn-primary, .reset-fab, .prev-chat-card.restart, .btn-yellow-cta, .scenario-card';
+
+  device.addEventListener('click', (e) => {
+    if (e.target.closest(hotspotSelector)) return;
+    showHotspotHints();
+  });
+
+  function showHotspotHints() {
+    let targets = [];
+
+    if (contextScreen.classList.contains('active')) {
+      targets = [contextNextBtn];
+    } else if (scenarioScreen.classList.contains('active')) {
+      targets = [scenario1Card, scenario2Card];
+    } else if (chatScreen.classList.contains('active')) {
+      // Prefer the restart card if it exists (end of flow)
+      const restartCard = chatBody.querySelector('.prev-chat-card.restart');
+      if (restartCard) {
+        targets = [restartCard];
+      } else if (!state.intentSent) {
+        targets = [inputField];
+      } else {
+        const activeCta = chatBody.querySelector('.msg-cta:not(.muted)');
+        if (activeCta) targets = [activeCta];
+      }
+    } else if (pickerScreen.classList.contains('active')) {
+      if (!state.selectedDate) {
+        targets = Array.from(dateRow.querySelectorAll('.date-card'));
+      } else if (!state.selectedSlot) {
+        targets = Array.from(slotGrid.querySelectorAll('.slot-card'));
+      } else {
+        targets = [confirmBtn];
+      }
+    }
+
+    targets.forEach(el => {
+      el.classList.add('hint-pulse');
+      setTimeout(() => el.classList.remove('hint-pulse'), 1700);
+    });
+  }
+</script>
+
+</body>
+</html>
