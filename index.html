@@ -66,7 +66,7 @@
     --ff-roboto: 'Roboto', sans-serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
   body {
     font-family: var(--ff);
@@ -1796,7 +1796,7 @@
       scrollChatToBottom();
     }, 1200);
 
-    // 3. Replace typing bubble with Wiom's response (new date + slot confirmation)
+    // 3. Replace typing bubble with Wiom's response (new date + slot)
     setTimeout(() => {
       const waiting = document.getElementById('waitingBubble');
       if (waiting) waiting.remove();
@@ -1804,40 +1804,112 @@
       // In response text, phrase slot as "X से Y बजे के बीच" instead of "तक"
       const slotInResponse = state.selectedSlot.replace('तक', 'के बीच');
 
-      // Case 1 & 2 are both "change" flows (existing date being replaced) → "नया दिन"
-      // Case 3 is first-time pick → just "दिन"
-      const headerLine = (state.case === 1 || state.case === 2)
-        ? 'नया दिन पक्का हो गया।'
-        : 'दिन पक्का हो गया।';
-      chatBody.appendChild(botBubble(
-        [
-          headerLine,
-          '&nbsp;',
-          `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
-        ],
-        '10:43 AM'
-      ));
-      chatBody.appendChild(botBubble(
-        ['अब आप आराम करें'],
-        '10:43 AM',
-        true
-      ));
+      if (state.case === 3) {
+        // Case 3: user picked a fresh date — NOT confirmed yet, partner has to approve.
+        // Lead with "request received" framing so user understands it's not confirmed.
+        chatBody.appendChild(botBubble(
+          [
+            'आपकी रिक्वेस्ट दर्ज हो गई।',
+            '&nbsp;',
+            `<strong>${state.selectedDate}</strong>, <strong>${slotInResponse}</strong> — कन्फर्म होते ही आपको यहीं अपडेट मिलेगा।`
+          ],
+          '10:43 AM'
+        ));
+
+        // Clickable yellow annotation card simulating partner action.
+        // User taps it to advance to the confirmation flow.
+        setTimeout(() => {
+          const partnerCard = document.createElement('div');
+          partnerCard.className = 'prev-chat-card restart';
+          partnerCard.innerHTML = `
+            <div class="prev-chat-card-note">This is not part of design · Tap to advance</div>
+            <div class="prev-chat-card-text">Partner reviews and confirms the user's chosen slot</div>
+          `;
+
+          let advanced = false;
+          partnerCard.addEventListener('click', () => {
+            if (advanced) return;
+            advanced = true;
+
+            // Remove the partner card — it's replaced by the typing + confirmation bubble
+            partnerCard.remove();
+
+            // Typing bubble simulating Wiom relaying the partner confirmation
+            chatBody.appendChild(waitingBubble());
+            scrollChatToBottom();
+
+            // Partner-confirmed message
+            setTimeout(() => {
+              const w = document.getElementById('waitingBubble');
+              if (w) w.remove();
+              chatBody.appendChild(botBubble(
+                [
+                  'तारीख पक्की हो गई।',
+                  '&nbsp;',
+                  `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
+                ],
+                '10:46 AM'
+              ));
+              chatBody.appendChild(botBubble(
+                ['अब आप आराम करें'],
+                '10:46 AM',
+                true
+              ));
+              scrollChatToBottom();
+
+              // Final yellow end card (standard restart)
+              setTimeout(() => {
+                const endCard = document.createElement('div');
+                endCard.className = 'prev-chat-card restart';
+                endCard.innerHTML = `
+                  <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
+                  <div class="prev-chat-card-text">Rest of the flow same as today</div>
+                `;
+                endCard.addEventListener('click', () => location.reload());
+                chatBody.appendChild(endCard);
+                scrollChatToBottom();
+              }, 1800);
+            }, 1500);
+          });
+
+          chatBody.appendChild(partnerCard);
+          scrollChatToBottom();
+        }, 1500);
+      } else {
+        // Case 1 & 2 — change flow; date is committed
+        const headerLine = 'नया दिन पक्का हो गया।';
+        chatBody.appendChild(botBubble(
+          [
+            headerLine,
+            '&nbsp;',
+            `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
+          ],
+          '10:43 AM'
+        ));
+        chatBody.appendChild(botBubble(
+          ['अब आप आराम करें'],
+          '10:43 AM',
+          true
+        ));
+      }
       scrollChatToBottom();
     }, 2900);
 
-    // 4. Append yellow inline annotation card at the bottom of chat to mark end-of-flow
-    //    Tapping this card restarts the prototype.
-    setTimeout(() => {
-      const endCard = document.createElement('div');
-      endCard.className = 'prev-chat-card restart';
-      endCard.innerHTML = `
-        <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
-        <div class="prev-chat-card-text">Partner will receive the new slot and assign the engineer → Rest of the flow will be same as of today</div>
-      `;
-      endCard.addEventListener('click', () => location.reload());
-      chatBody.appendChild(endCard);
-      scrollChatToBottom();
-    }, 5000);
+    // 4. Append yellow inline annotation card (Cases 1 & 2 only).
+    //    Case 3 manages its own end card inside the partner-card click handler.
+    if (state.case !== 3) {
+      setTimeout(() => {
+        const endCard = document.createElement('div');
+        endCard.className = 'prev-chat-card restart';
+        endCard.innerHTML = `
+          <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
+          <div class="prev-chat-card-text">Partner will receive the new slot and assign the engineer → Rest of the flow will be same as of today</div>
+        `;
+        endCard.addEventListener('click', () => location.reload());
+        chatBody.appendChild(endCard);
+        scrollChatToBottom();
+      }, 5000);
+    }
   });
 
   resetBtn.addEventListener('click', () => location.reload());
