@@ -706,9 +706,6 @@
     border-radius: 50%;
     background: var(--wiom-text-hint);
   }
-  /* Case 3 — no date set yet: hide context strip AND the current-date dot */
-  .screen[data-case="3"] .context-strip { display: none; }
-  .screen[data-case="3"] .date-card.current::after { display: none; }
   .date-card:hover { background: var(--chat-bg-sec); }
   .date-card.selected {
     background: var(--wiom-bg-selected);
@@ -719,6 +716,14 @@
   .date-num { font-size: 20px; line-height: 28px; font-weight: 700; color: var(--wiom-text-default); }
   .date-card.selected .date-day,
   .date-card.selected .date-num { color: var(--wiom-text-selected); }
+  /* Fully booked date — greyed, click shows a toast */
+  .date-card.disabled {
+    background: var(--chat-bg-sec);
+    border-color: var(--wiom-stroke-default);
+    cursor: not-allowed;
+  }
+  .date-card.disabled .date-day,
+  .date-card.disabled .date-num { color: var(--wiom-text-disabled); }
 
   .slot-grid { display: flex; flex-direction: column; gap: var(--s-12); }
   .slot-card {
@@ -751,6 +756,23 @@
   .slot-title { font-weight: 600; font-size: 16px; line-height: 24px; }
   .slot-card.selected .slot-title { color: var(--wiom-text-selected); }
   .slot-sub { font-size: 12px; line-height: 16px; color: var(--wiom-text-sec); }
+  /* Slot unavailable — greyed, click shows a toast */
+  .slot-card.disabled {
+    background: var(--chat-bg-sec);
+    border-color: var(--wiom-stroke-default);
+    cursor: not-allowed;
+  }
+  .slot-card.disabled .slot-icon { background: var(--chat-bg-pri); }
+  .slot-card.disabled .slot-icon .material-icons { color: var(--wiom-text-disabled); }
+  .slot-card.disabled .slot-title,
+  .slot-card.disabled .slot-sub { color: var(--wiom-text-disabled); }
+  .slot-status {
+    font-size: 11px; line-height: 14px; font-weight: 500;
+    color: var(--wiom-text-disabled);
+    margin-top: 2px;
+    display: none;
+  }
+  .slot-card.disabled .slot-status { display: block; }
   .slot-check { display: none; }
   .slot-card.selected .slot-check { display: block; }
   .slot-check .material-icons { color: var(--wiom-icon-brand); font-size: 24px; }
@@ -972,6 +994,34 @@
     25%, 60% { opacity: 1; }
   }
 
+  /* ===== Toast (Android-style, bottom of screen) =====
+     Matches the native Android Toast pattern used in the Wiom Kotlin app. */
+  .toast {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: rgba(22, 16, 33, 0.92);
+    color: #FFFFFF;
+    padding: 12px 20px;
+    border-radius: var(--r-full);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    text-align: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 220ms ease-out, transform 220ms ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    max-width: calc(100% - 48px);
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   /* ===== Reset FAB ===== */
   .reset-fab {
     position: fixed;
@@ -1061,11 +1111,6 @@
             <div class="scenario-card-desc">व्योम ने एक दिन सुझाया है, पर वर्मा जी ने अभी कन्फर्म नहीं किया। अब वो दिन बदलना चाहते हैं।</div>
           </div>
 
-          <div class="scenario-card" id="scenario3Card">
-            <div class="scenario-card-num">Case 3</div>
-            <div class="scenario-card-title">दिन तय नहीं हुआ</div>
-            <div class="scenario-card-desc">व्योम से अभी तक कोई दिन तय नहीं हुआ। अब वर्मा जी खुद दिन तय करना चाहते हैं।</div>
-          </div>
         </div>
 
         <div class="context-cta-wrap">
@@ -1166,7 +1211,7 @@
             <div class="msg-tail"></div>
             <div class="msg-bubble has-cta-below">
               <div class="msg-content">
-                <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> आपको ठीक लगेगा?</div>
+                <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 1 बजे के बीच</strong> आपको ठीक लगेगा?</div>
                 <div class="msg-time">10:15 AM</div>
               </div>
             </div>
@@ -1190,7 +1235,7 @@
                 <div class="reply-quote-bar"></div>
                 <div class="reply-quote-text">
                   <div class="reply-quote-author">Wiom</div>
-                  <div class="reply-quote-msg">क्या 5 मई को 10 से 2 बजे के बीच आपको ठीक लगेगा?</div>
+                  <div class="reply-quote-msg">क्या 5 मई को 10 से 1 बजे के बीच आपको ठीक लगेगा?</div>
                 </div>
               </div>
               <div class="msg-content">
@@ -1209,7 +1254,7 @@
               <div class="msg-content">
                 <div class="msg-text">तारीख पक्की हो गई।</div>
                 <div class="msg-text">&nbsp;</div>
-                <div class="msg-text"><strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> नेट लगेगा।</div>
+                <div class="msg-text"><strong>5 मई</strong> को <strong>10 से 1 बजे के बीच</strong> नेट लगेगा।</div>
                 <div class="msg-time">10:15 AM</div>
               </div>
             </div>
@@ -1300,7 +1345,7 @@
         <div class="context-strip">
           <div class="context-strip-label">अभी तय है</div>
           <div class="context-strip-value">5 मई, मंगलवार</div>
-          <div class="context-strip-time">10 से 2 बजे के बीच</div>
+          <div class="context-strip-time">10 से 1 बजे के बीच</div>
         </div>
 
         <div class="section-block">
@@ -1309,7 +1354,7 @@
             <div class="date-card" data-date="1 मई" data-day="शुक्रवार">
               <div class="date-day">शुक्र</div><div class="date-num">1</div>
             </div>
-            <div class="date-card" data-date="2 मई" data-day="शनिवार">
+            <div class="date-card disabled" data-date="2 मई" data-day="शनिवार">
               <div class="date-day">शनि</div><div class="date-num">2</div>
             </div>
             <div class="date-card" data-date="3 मई" data-day="रविवार">
@@ -1336,19 +1381,30 @@
         <div class="section-block time-section" id="timeSection">
           <div class="section-title">समय</div>
           <div class="slot-grid" id="slotGrid">
-            <div class="slot-card" data-slot="10 से 2 बजे तक" data-slot-name="सुबह">
-              <div class="slot-icon"><span class="material-icons">wb_sunny</span></div>
+            <div class="slot-card" data-slot="10 से 1 बजे तक" data-slot-name="सुबह">
+              <div class="slot-icon"><span class="material-icons">flare</span></div>
               <div class="slot-text">
                 <div class="slot-title">सुबह</div>
-                <div class="slot-sub">10 से 2 बजे तक</div>
+                <div class="slot-sub">10 से 1 बजे तक</div>
+                <div class="slot-status">उपलब्ध नहीं</div>
               </div>
               <div class="slot-check"><span class="material-icons">check_circle</span></div>
             </div>
-            <div class="slot-card" data-slot="2 से 6 बजे तक" data-slot-name="दोपहर">
-              <div class="slot-icon"><span class="material-icons">wb_twilight</span></div>
+            <div class="slot-card" data-slot="1 से 4 बजे तक" data-slot-name="दोपहर">
+              <div class="slot-icon"><span class="material-icons">wb_sunny</span></div>
               <div class="slot-text">
                 <div class="slot-title">दोपहर</div>
-                <div class="slot-sub">2 से 6 बजे तक</div>
+                <div class="slot-sub">1 से 4 बजे तक</div>
+                <div class="slot-status">उपलब्ध नहीं</div>
+              </div>
+              <div class="slot-check"><span class="material-icons">check_circle</span></div>
+            </div>
+            <div class="slot-card" data-slot="4 से 7 बजे तक" data-slot-name="शाम">
+              <div class="slot-icon"><span class="material-icons">wb_twilight</span></div>
+              <div class="slot-text">
+                <div class="slot-title">शाम</div>
+                <div class="slot-sub">4 से 7 बजे तक</div>
+                <div class="slot-status">उपलब्ध नहीं</div>
               </div>
               <div class="slot-check"><span class="material-icons">check_circle</span></div>
             </div>
@@ -1360,6 +1416,8 @@
         <button class="btn-primary" id="confirmBtn">कन्फर्म करें</button>
       </div>
     </section>
+
+    <div class="toast" id="toast"></div>
 
   </div>
 </div>
@@ -1378,7 +1436,106 @@
     keyboardOpen: false,
     typed: false,
     case: 1,
+    // Case 2 picker mode — null | 'partnerOnly' | 'fromToday' | 'afterPartner'
+    //   null         → default 1–8 मई (used by Case 1)
+    //   partnerOnly  → 4 dates (partner's original window) — set when CTA "कोई अन्य दिन चुनें" clicked
+    //   fromToday    → 7 days from today — set when user types intent without ever clicking CTA
+    //   afterPartner → 7 days after partner's window — set when user clicked CTA AND then typed intent
+    case2DateMode: null,
   };
+
+  // Demo anchor: today = 5 मई (मंगलवार), the day Wiom originally proposed.
+  // Partner's original 4-day window = 5, 6, 7, 8 मई (today onwards).
+
+  // Default date row (Case 1): around the confirmed date 5 मई
+  const DEFAULT_DATE_ROW_HTML = `
+    <div class="date-card" data-date="1 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">1</div>
+    </div>
+    <div class="date-card disabled" data-date="2 मई" data-day="शनिवार">
+      <div class="date-day">शनि</div><div class="date-num">2</div>
+    </div>
+    <div class="date-card" data-date="3 मई" data-day="रविवार">
+      <div class="date-day">रवि</div><div class="date-num">3</div>
+    </div>
+    <div class="date-card" data-date="4 मई" data-day="सोमवार">
+      <div class="date-day">सोम</div><div class="date-num">4</div>
+    </div>
+    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">5</div>
+    </div>
+    <div class="date-card" data-date="6 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">6</div>
+    </div>
+    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">7</div>
+    </div>
+    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">8</div>
+    </div>`;
+
+  // Case 2 'partnerOnly' (4 dates) — partner's original offered window, 5 मई = proposed
+  const PARTNER_ONLY_DATE_ROW_HTML = `
+    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">5</div>
+    </div>
+    <div class="date-card" data-date="6 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">6</div>
+    </div>
+    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">7</div>
+    </div>
+    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">8</div>
+    </div>`;
+
+  // Case 2 'fromToday' (7 dates from today=5 मई) — user typed without ever clicking CTA
+  const FROM_TODAY_DATE_ROW_HTML = `
+    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">5</div>
+    </div>
+    <div class="date-card" data-date="6 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">6</div>
+    </div>
+    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">7</div>
+    </div>
+    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">8</div>
+    </div>
+    <div class="date-card" data-date="9 मई" data-day="शनिवार">
+      <div class="date-day">शनि</div><div class="date-num">9</div>
+    </div>
+    <div class="date-card" data-date="10 मई" data-day="रविवार">
+      <div class="date-day">रवि</div><div class="date-num">10</div>
+    </div>
+    <div class="date-card" data-date="11 मई" data-day="सोमवार">
+      <div class="date-day">सोम</div><div class="date-num">11</div>
+    </div>`;
+
+  // Case 2 'afterPartner' (7 dates AFTER partner's 4-day window) — user saw partner's 4 dates, came back, typed
+  const AFTER_PARTNER_DATE_ROW_HTML = `
+    <div class="date-card" data-date="9 मई" data-day="शनिवार">
+      <div class="date-day">शनि</div><div class="date-num">9</div>
+    </div>
+    <div class="date-card" data-date="10 मई" data-day="रविवार">
+      <div class="date-day">रवि</div><div class="date-num">10</div>
+    </div>
+    <div class="date-card" data-date="11 मई" data-day="सोमवार">
+      <div class="date-day">सोम</div><div class="date-num">11</div>
+    </div>
+    <div class="date-card" data-date="12 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">12</div>
+    </div>
+    <div class="date-card" data-date="13 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">13</div>
+    </div>
+    <div class="date-card" data-date="14 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">14</div>
+    </div>
+    <div class="date-card" data-date="15 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">15</div>
+    </div>`;
 
   const contextScreen  = document.getElementById('contextScreen');
   const scenarioScreen = document.getElementById('scenarioScreen');
@@ -1397,8 +1554,17 @@
   const contextNextBtn = document.getElementById('contextNextBtn');
   const scenario1Card  = document.getElementById('scenario1Card');
   const scenario2Card  = document.getElementById('scenario2Card');
-  const scenario3Card  = document.getElementById('scenario3Card');
   const device         = document.querySelector('.device');
+
+  // Toast (top banner) for short user feedback
+  const toastEl = document.getElementById('toast');
+  let toastHideTimer = null;
+  function showToast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    if (toastHideTimer) clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
+  }
 
   function scrollChatToBottom() {
     requestAnimationFrame(() => { chatBody.scrollTop = chatBody.scrollHeight; });
@@ -1534,7 +1700,6 @@
     scenarioScreen.classList.add('left');
     chatScreen.classList.add('active');
     if (state.case === 2) setupCase2Chat();
-    else if (state.case === 3) setupCase3Chat();
     // Open chat scrolled to the latest message (instant, no smooth scroll)
     chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'instant' });
   }
@@ -1544,20 +1709,28 @@
     pickerScreen.classList.add('active');
     pickerScreen.dataset.case = String(state.case);
 
+    // Swap date row based on case + mode
+    let rowHtml = DEFAULT_DATE_ROW_HTML;
+    if (state.case === 2) {
+      if (state.case2DateMode === 'partnerOnly')      rowHtml = PARTNER_ONLY_DATE_ROW_HTML;
+      else if (state.case2DateMode === 'afterPartner') rowHtml = AFTER_PARTNER_DATE_ROW_HTML;
+      else                                             rowHtml = FROM_TODAY_DATE_ROW_HTML;
+    }
+    dateRow.innerHTML = rowHtml;
+
     // Update context strip content for the active case
     const strip = pickerScreen.querySelector('.context-strip');
     if (state.case === 1) {
       strip.innerHTML = `
         <div class="context-strip-label">अभी तय है</div>
         <div class="context-strip-value">5 मई, मंगलवार</div>
-        <div class="context-strip-time">10 से 2 बजे के बीच</div>`;
+        <div class="context-strip-time">10 से 1 बजे के बीच</div>`;
     } else if (state.case === 2) {
       strip.innerHTML = `
         <div class="context-strip-label">व्योम ने सुझाया था</div>
         <div class="context-strip-value">5 मई, मंगलवार</div>
-        <div class="context-strip-time">10 से 2 बजे के बीच</div>`;
+        <div class="context-strip-time">10 से 1 बजे के बीच</div>`;
     }
-    // case 3: strip stays hidden via CSS
   }
   function showChat() {
     pickerScreen.classList.remove('active');
@@ -1566,9 +1739,8 @@
   }
 
   contextNextBtn.addEventListener('click', showScenario);
-  scenario1Card.addEventListener('click', () => { state.case = 1; startChat(); });
-  scenario2Card.addEventListener('click', () => { state.case = 2; startChat(); });
-  scenario3Card.addEventListener('click', () => { state.case = 3; startChat(); });
+  scenario1Card.addEventListener('click', () => { state.case = 1; state.case2DateMode = null; startChat(); });
+  scenario2Card.addEventListener('click', () => { state.case = 2; state.case2DateMode = null; startChat(); });
 
   // Build initial chat content for Case 2 — Wiom proposed a day, user hasn't confirmed yet
   function setupCase2Chat() {
@@ -1582,9 +1754,9 @@
     `;
     chatBody.appendChild(prevCard);
 
-    // Bot bubble: proposal with two visually-active CTAs.
-    // For this demo they are inert (click does nothing) — user proceeds via the
-    // typed-intent path. They look active (pink text) for design fidelity.
+    // Bot bubble: proposal with two CTAs.
+    // - "यह दिन सही है" — visually present but inert (no click handler) for demo
+    // - "कोई अन्य दिन चुनें" — ACTIVE, opens picker with shifted date window
     const proposalRow = document.createElement('div');
     proposalRow.className = 'msg-row bot';
     proposalRow.innerHTML = `
@@ -1592,47 +1764,34 @@
         <div class="msg-tail"></div>
         <div class="msg-bubble has-cta-below">
           <div class="msg-content">
-            <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 2 बजे के बीच</strong> आपको ठीक लगेगा?</div>
+            <div class="msg-text">क्या <strong>5 मई</strong> को <strong>10 से 1 बजे के बीच</strong> आपको ठीक लगेगा?</div>
             <div class="msg-time">10:15 AM</div>
           </div>
         </div>
         <div class="msg-divider"></div>
-        <button class="msg-cta middle" type="button">
+        <button class="msg-cta middle" type="button" data-action="accept">
           <span class="msg-cta-text">यह दिन सही है</span>
         </button>
         <div class="msg-divider"></div>
-        <button class="msg-cta" type="button">
+        <button class="msg-cta" type="button" data-action="change">
           <span class="msg-cta-text">कोई अन्य दिन चुनें</span>
         </button>
       </div>`;
     chatBody.appendChild(proposalRow);
-  }
 
-  // Build initial chat content for Case 3 — no date set yet
-  function setupCase3Chat() {
-    chatBody.innerHTML = '';
-
-    // Yellow placeholder card (designer annotation)
-    const prevCard = document.createElement('div');
-    prevCard.className = 'prev-chat-card';
-    prevCard.innerHTML = `
-      <div class="prev-chat-card-note">This is not part of design</div>
-      <div class="prev-chat-card-text">keep the previous chat history as is</div>
-    `;
-    chatBody.appendChild(prevCard);
-
-    // Bot: booking registered
-    chatBody.appendChild(botBubble(['आपकी बुकिंग दर्ज हो गई है।'], '10:15 AM'));
-
-    // Bot: heads-up about Wiom calling (follow-up — same speaker, no notch)
-    chatBody.appendChild(botBubble(
-      ['सेटअप के समय के लिए व्योम से कॉल आ सकता है।'],
-      '10:15 AM',
-      true
-    ));
-
-    // Bot: contact card with Wiom number + Save number CTA (follow-up)
-    chatBody.appendChild(contactCardBubble('Wiom', '+91 88803 22222', 'नंबर सेव करें'));
+    // Wire up only the "कोई अन्य दिन चुनें" CTA (the other stays inert per demo)
+    const acceptCta = proposalRow.querySelector('[data-action="accept"]');
+    const changeCta = proposalRow.querySelector('[data-action="change"]');
+    changeCta.addEventListener('click', () => {
+      // CTA path → show only the partner's 4-day window
+      state.case2DateMode = 'partnerOnly';
+      // Track this CTA as the "active" one for post-confirm reply quote
+      state.activeCta = changeCta;
+      // Don't mute yet — CTA stays active until a NEW chat bubble appears after it
+      // (i.e., user confirms a date in picker, or types an intent in chat).
+      // If user just goes back from picker without confirming, CTAs stay tappable.
+      showPicker();
+    });
   }
 
   function openKeyboard() {
@@ -1641,10 +1800,7 @@
     keyboard.classList.add('open');
 
     // simulate typed text — different per case
-    let intentText;
-    if (state.case === 1) intentText = 'नेट लगवाने का दिन बदलना है';
-    else if (state.case === 2) intentText = 'यह दिन नहीं चलेगा';
-    else intentText = 'नेट लगवाने का दिन तय करना है';
+    const intentText = state.case === 1 ? 'नेट लगवाने का दिन बदलना है' : 'यह दिन नहीं चलेगा';
     inputField.classList.remove('placeholder');
     inputField.innerHTML = `${intentText}<span class="caret"></span>`;
     state.typed = true;
@@ -1673,20 +1829,17 @@
     state.intentSent = true;
 
     // Add user bubble with the typed text (case-specific)
-    let userMsg;
-    if (state.case === 1) userMsg = 'नेट लगवाने का दिन बदलना है';
-    else if (state.case === 2) userMsg = 'यह दिन नहीं चलेगा';
-    else userMsg = 'नेट लगवाने का दिन तय करना है';
+    const userMsg = state.case === 1 ? 'नेट लगवाने का दिन बदलना है' : 'यह दिन नहीं चलेगा';
     chatBody.appendChild(userBubble(userMsg, '10:42 AM'));
 
-    // Once user types intent, any earlier interactive CTAs in chat become stale —
-    // mute them visually (matching Case 1's already-actioned chat history pattern).
-    // Case 2: proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
-    // Case 3: contact card's "नंबर सेव करें"
+    // Once user types intent, any earlier interactive CTAs become stale (mute them).
+    // Case 2: the proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
     if (state.case === 2) {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
-    } else if (state.case === 3) {
-      chatBody.querySelectorAll('.contact-card-cta').forEach(c => c.classList.add('muted'));
+      // If the user had previously clicked "कोई अन्य दिन चुनें" (mode = partnerOnly),
+      // typing now means they rejected the partner's window → show 7 days AFTER it.
+      // Otherwise, they typed without ever seeing the partner's window → show 7 days from today.
+      state.case2DateMode = (state.case2DateMode === 'partnerOnly') ? 'afterPartner' : 'fromToday';
     }
 
     // Reset input + close keyboard
@@ -1707,14 +1860,8 @@
       const waiting = document.getElementById('waitingBubble');
       if (waiting) waiting.remove();
 
-      let responseTexts, ctaLabel;
-      if (state.case === 1 || state.case === 2) {
-        responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'];
-        ctaLabel = 'नेट लगवाने का दिन बदलें';
-      } else {
-        responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।'];
-        ctaLabel = 'नेट लगवाने का दिन चुनें';
-      }
+      const responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'];
+      const ctaLabel = 'नेट लगवाने का दिन बदलें';
 
       const ctaRow = botBubbleWithCTA(
         responseTexts,
@@ -1736,20 +1883,52 @@
 
   const timeSection = document.getElementById('timeSection');
 
+  // Demo availability — date string → list of available slot names
+  // (date not in this map = all 3 slots available)
+  const slotAvailability = {
+    '3 मई': ['शाम'],   // 3 मई: only शाम is available, सुबह + दोपहर are booked
+  };
+
   dateRow.addEventListener('click', (e) => {
     const card = e.target.closest('.date-card');
     if (!card) return;
+    if (card.classList.contains('disabled')) {
+      showToast('यह दिन उपलब्ध नहीं है');
+      return;
+    }
     dateRow.querySelectorAll('.date-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.selectedDate = card.dataset.date;
     state.selectedDay = card.dataset.day;
     timeSection.classList.add('visible');
+
+    // Apply slot availability for the selected date
+    const avail = slotAvailability[state.selectedDate];
+    document.querySelectorAll('.slot-card').forEach(slot => {
+      const slotName = slot.dataset.slotName;
+      const isAvailable = !avail || avail.includes(slotName);
+      if (isAvailable) {
+        slot.classList.remove('disabled');
+      } else {
+        slot.classList.add('disabled');
+        // If user had selected this slot before, deselect it
+        if (slot.classList.contains('selected')) {
+          slot.classList.remove('selected');
+          state.selectedSlot = null;
+        }
+      }
+    });
+
     maybeShowConfirm();
   });
 
   slotGrid.addEventListener('click', (e) => {
     const card = e.target.closest('.slot-card');
     if (!card) return;
+    if (card.classList.contains('disabled')) {
+      showToast('यह समय उपलब्ध नहीं है');
+      return;
+    }
     slotGrid.querySelectorAll('.slot-card').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
     state.selectedSlot = card.dataset.slot;
@@ -1770,18 +1949,10 @@
     showChat();
 
     // 1. User reply bubble with quote of bot's earlier prompt + "✔️ हो गया"
-    //    Also mute the original CTA so it can't be tapped again
+    //    A new bubble appears after the prior CTAs → mute all bot CTAs above it.
     setTimeout(() => {
-      if (state.activeCta) state.activeCta.classList.add('muted');
-      let quotedBotMsg;
-      if (state.case === 1) {
-        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
-      } else if (state.case === 2) {
-        // Only typed-intent path is functional in Case 2 (proposal CTAs are non-functional)
-        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
-      } else {
-        quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन चुनें।';
-      }
+      chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
+      const quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
       chatBody.appendChild(userReplyWithQuote(
         quotedBotMsg,
         '✔️ हो गया',
@@ -1804,112 +1975,35 @@
       // In response text, phrase slot as "X से Y बजे के बीच" instead of "तक"
       const slotInResponse = state.selectedSlot.replace('तक', 'के बीच');
 
-      if (state.case === 3) {
-        // Case 3: user picked a fresh date — NOT confirmed yet, partner has to approve.
-        // Lead with "request received" framing so user understands it's not confirmed.
-        chatBody.appendChild(botBubble(
-          [
-            'आपकी रिक्वेस्ट दर्ज हो गई।',
-            '&nbsp;',
-            `<strong>${state.selectedDate}</strong>, <strong>${slotInResponse}</strong> — कन्फर्म होते ही आपको यहीं अपडेट मिलेगा।`
-          ],
-          '10:43 AM'
-        ));
-
-        // Clickable yellow annotation card simulating partner action.
-        // User taps it to advance to the confirmation flow.
-        setTimeout(() => {
-          const partnerCard = document.createElement('div');
-          partnerCard.className = 'prev-chat-card restart';
-          partnerCard.innerHTML = `
-            <div class="prev-chat-card-note">This is not part of design · Tap to advance</div>
-            <div class="prev-chat-card-text">Partner reviews and confirms the user's chosen slot</div>
-          `;
-
-          let advanced = false;
-          partnerCard.addEventListener('click', () => {
-            if (advanced) return;
-            advanced = true;
-
-            // Remove the partner card — it's replaced by the typing + confirmation bubble
-            partnerCard.remove();
-
-            // Typing bubble simulating Wiom relaying the partner confirmation
-            chatBody.appendChild(waitingBubble());
-            scrollChatToBottom();
-
-            // Partner-confirmed message
-            setTimeout(() => {
-              const w = document.getElementById('waitingBubble');
-              if (w) w.remove();
-              chatBody.appendChild(botBubble(
-                [
-                  'तारीख पक्की हो गई।',
-                  '&nbsp;',
-                  `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
-                ],
-                '10:46 AM'
-              ));
-              chatBody.appendChild(botBubble(
-                ['अब आप आराम करें'],
-                '10:46 AM',
-                true
-              ));
-              scrollChatToBottom();
-
-              // Final yellow end card (standard restart)
-              setTimeout(() => {
-                const endCard = document.createElement('div');
-                endCard.className = 'prev-chat-card restart';
-                endCard.innerHTML = `
-                  <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
-                  <div class="prev-chat-card-text">Rest of the flow same as today</div>
-                `;
-                endCard.addEventListener('click', () => location.reload());
-                chatBody.appendChild(endCard);
-                scrollChatToBottom();
-              }, 1800);
-            }, 1500);
-          });
-
-          chatBody.appendChild(partnerCard);
-          scrollChatToBottom();
-        }, 1500);
-      } else {
-        // Case 1 & 2 — change flow; date is committed
-        const headerLine = 'नया दिन पक्का हो गया।';
-        chatBody.appendChild(botBubble(
-          [
-            headerLine,
-            '&nbsp;',
-            `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
-          ],
-          '10:43 AM'
-        ));
-        chatBody.appendChild(botBubble(
-          ['अब आप आराम करें'],
-          '10:43 AM',
-          true
-        ));
-      }
+      // Case 1 & 2 — change flow; date is committed
+      chatBody.appendChild(botBubble(
+        [
+          'नया दिन पक्का हो गया।',
+          '&nbsp;',
+          `नेट <strong>${state.selectedDate}</strong> को <strong>${slotInResponse}</strong> लगेगा।`
+        ],
+        '10:43 AM'
+      ));
+      chatBody.appendChild(botBubble(
+        ['अब आप आराम करें'],
+        '10:43 AM',
+        true
+      ));
       scrollChatToBottom();
     }, 2900);
 
-    // 4. Append yellow inline annotation card (Cases 1 & 2 only).
-    //    Case 3 manages its own end card inside the partner-card click handler.
-    if (state.case !== 3) {
-      setTimeout(() => {
-        const endCard = document.createElement('div');
-        endCard.className = 'prev-chat-card restart';
-        endCard.innerHTML = `
-          <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
-          <div class="prev-chat-card-text">Partner will receive the new slot and assign the engineer → Rest of the flow will be same as of today</div>
-        `;
-        endCard.addEventListener('click', () => location.reload());
-        chatBody.appendChild(endCard);
-        scrollChatToBottom();
-      }, 5000);
-    }
+    // 4. Append yellow inline annotation card to mark end-of-flow.
+    setTimeout(() => {
+      const endCard = document.createElement('div');
+      endCard.className = 'prev-chat-card restart';
+      endCard.innerHTML = `
+        <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
+        <div class="prev-chat-card-text">Partner will receive the new slot and assign the engineer → Rest of the flow will be same as of today</div>
+      `;
+      endCard.addEventListener('click', () => location.reload());
+      chatBody.appendChild(endCard);
+      scrollChatToBottom();
+    }, 5000);
   });
 
   resetBtn.addEventListener('click', () => location.reload());
@@ -1928,14 +2022,19 @@
     if (contextScreen.classList.contains('active')) {
       targets = [contextNextBtn];
     } else if (scenarioScreen.classList.contains('active')) {
-      targets = [scenario1Card, scenario2Card, scenario3Card];
+      targets = [scenario1Card, scenario2Card];
     } else if (chatScreen.classList.contains('active')) {
       // Prefer the restart card if it exists (end of flow)
       const restartCard = chatBody.querySelector('.prev-chat-card.restart');
       if (restartCard) {
         targets = [restartCard];
       } else if (!state.intentSent) {
+        // Chatbox is always tappable. In Case 2 there's also an active proposal CTA
+        // ("कोई अन्य दिन चुनें") — pulse the latest active one alongside the chatbox.
         targets = [inputField];
+        const activeCtas = chatBody.querySelectorAll('.msg-cta:not(.muted)');
+        const latestCta = activeCtas[activeCtas.length - 1];
+        if (latestCta) targets.push(latestCta);
       } else {
         // Target the LATEST active CTA, not the first — Case 2 has inert
         // proposal CTAs above that come before the bot's response CTA in DOM order
@@ -1945,9 +2044,9 @@
       }
     } else if (pickerScreen.classList.contains('active')) {
       if (!state.selectedDate) {
-        targets = Array.from(dateRow.querySelectorAll('.date-card'));
+        targets = Array.from(dateRow.querySelectorAll('.date-card:not(.disabled)'));
       } else if (!state.selectedSlot) {
-        targets = Array.from(slotGrid.querySelectorAll('.slot-card'));
+        targets = Array.from(slotGrid.querySelectorAll('.slot-card:not(.disabled)'));
       } else {
         targets = [confirmBtn];
       }
