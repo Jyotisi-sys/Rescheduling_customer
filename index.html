@@ -1436,16 +1436,10 @@
     keyboardOpen: false,
     typed: false,
     case: 1,
-    // Case 2 picker mode — null | 'partnerOnly' | 'fromToday' | 'afterPartner'
-    //   null         → default 1–8 मई (used by Case 1)
-    //   partnerOnly  → 4 dates (partner's original window) — set when CTA "कोई अन्य दिन चुनें" clicked
-    //   fromToday    → 7 days from today — set when user types intent without ever clicking CTA
-    //   afterPartner → 7 days after partner's window — set when user clicked CTA AND then typed intent
-    case2DateMode: null,
   };
 
   // Demo anchor: today = 5 मई (मंगलवार), the day Wiom originally proposed.
-  // Partner's original 4-day window = 5, 6, 7, 8 मई (today onwards).
+  // Partner's original 4-day window = 5, 6, 7, 8 मई.
 
   // Default date row (Case 1): around the confirmed date 5 मई
   const DEFAULT_DATE_ROW_HTML = `
@@ -1474,23 +1468,11 @@
       <div class="date-day">शुक्र</div><div class="date-num">8</div>
     </div>`;
 
-  // Case 2 'partnerOnly' (4 dates) — partner's original offered window, 5 मई = proposed
-  const PARTNER_ONLY_DATE_ROW_HTML = `
-    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
-      <div class="date-day">मंगल</div><div class="date-num">5</div>
-    </div>
-    <div class="date-card" data-date="6 मई" data-day="बुधवार">
-      <div class="date-day">बुध</div><div class="date-num">6</div>
-    </div>
-    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
-      <div class="date-day">गुरु</div><div class="date-num">7</div>
-    </div>
-    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
-      <div class="date-day">शुक्र</div><div class="date-num">8</div>
-    </div>`;
-
-  // Case 2 'fromToday' (7 dates from today=5 मई) — user typed without ever clicking CTA
-  const FROM_TODAY_DATE_ROW_HTML = `
+  // Case 2 date row — 11 options spanning partner's 4 dates + 7 more dates after.
+  // Default scroll position lands on the 5th card (9 मई) at the left edge;
+  // user scrolls LEFT to reveal partner's original 4 dates (5–8 मई).
+  // 5 मई = originally proposed (marked `current`).
+  const CASE2_DATE_ROW_HTML = `
     <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
       <div class="date-day">मंगल</div><div class="date-num">5</div>
     </div>
@@ -1503,18 +1485,6 @@
     <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
       <div class="date-day">शुक्र</div><div class="date-num">8</div>
     </div>
-    <div class="date-card" data-date="9 मई" data-day="शनिवार">
-      <div class="date-day">शनि</div><div class="date-num">9</div>
-    </div>
-    <div class="date-card" data-date="10 मई" data-day="रविवार">
-      <div class="date-day">रवि</div><div class="date-num">10</div>
-    </div>
-    <div class="date-card" data-date="11 मई" data-day="सोमवार">
-      <div class="date-day">सोम</div><div class="date-num">11</div>
-    </div>`;
-
-  // Case 2 'afterPartner' (7 dates AFTER partner's 4-day window) — user saw partner's 4 dates, came back, typed
-  const AFTER_PARTNER_DATE_ROW_HTML = `
     <div class="date-card" data-date="9 मई" data-day="शनिवार">
       <div class="date-day">शनि</div><div class="date-num">9</div>
     </div>
@@ -1709,14 +1679,20 @@
     pickerScreen.classList.add('active');
     pickerScreen.dataset.case = String(state.case);
 
-    // Swap date row based on case + mode
-    let rowHtml = DEFAULT_DATE_ROW_HTML;
+    // Swap date row based on case
+    dateRow.innerHTML = (state.case === 2) ? CASE2_DATE_ROW_HTML : DEFAULT_DATE_ROW_HTML;
+
+    // Case 2: 11 dates total — initial scroll lands on the 5th card (9 मई) at the left edge;
+    // user can scroll LEFT to reveal partner's original 4 dates (5–8 मई).
     if (state.case === 2) {
-      if (state.case2DateMode === 'partnerOnly')      rowHtml = PARTNER_ONLY_DATE_ROW_HTML;
-      else if (state.case2DateMode === 'afterPartner') rowHtml = AFTER_PARTNER_DATE_ROW_HTML;
-      else                                             rowHtml = FROM_TODAY_DATE_ROW_HTML;
+      const fifthCard = dateRow.children[4];
+      if (fifthCard) {
+        // Wait for layout, then position scroll
+        requestAnimationFrame(() => { dateRow.scrollLeft = fifthCard.offsetLeft; });
+      }
+    } else {
+      dateRow.scrollLeft = 0;
     }
-    dateRow.innerHTML = rowHtml;
 
     // Update context strip content for the active case
     const strip = pickerScreen.querySelector('.context-strip');
@@ -1739,8 +1715,8 @@
   }
 
   contextNextBtn.addEventListener('click', showScenario);
-  scenario1Card.addEventListener('click', () => { state.case = 1; state.case2DateMode = null; startChat(); });
-  scenario2Card.addEventListener('click', () => { state.case = 2; state.case2DateMode = null; startChat(); });
+  scenario1Card.addEventListener('click', () => { state.case = 1; startChat(); });
+  scenario2Card.addEventListener('click', () => { state.case = 2; startChat(); });
 
   // Build initial chat content for Case 2 — Wiom proposed a day, user hasn't confirmed yet
   function setupCase2Chat() {
@@ -1783,8 +1759,6 @@
     const acceptCta = proposalRow.querySelector('[data-action="accept"]');
     const changeCta = proposalRow.querySelector('[data-action="change"]');
     changeCta.addEventListener('click', () => {
-      // CTA path → show only the partner's 4-day window
-      state.case2DateMode = 'partnerOnly';
       // Track this CTA as the "active" one for post-confirm reply quote
       state.activeCta = changeCta;
       // Don't mute yet — CTA stays active until a NEW chat bubble appears after it
@@ -1836,10 +1810,6 @@
     // Case 2: the proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
     if (state.case === 2) {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
-      // If the user had previously clicked "कोई अन्य दिन चुनें" (mode = partnerOnly),
-      // typing now means they rejected the partner's window → show 7 days AFTER it.
-      // Otherwise, they typed without ever seeing the partner's window → show 7 days from today.
-      state.case2DateMode = (state.case2DateMode === 'partnerOnly') ? 'afterPartner' : 'fromToday';
     }
 
     // Reset input + close keyboard
