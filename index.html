@@ -1436,6 +1436,10 @@
     keyboardOpen: false,
     typed: false,
     case: 1,
+    // Case 2 picker mode — null | 'partnerOnly' | 'reschedule'
+    //   partnerOnly → 4 dates (partner's window)         — set when CTA "कोई अन्य दिन चुनें" clicked
+    //   reschedule  → 11 dates (5–15 मई, scroll to 9 मई) — set when customer types intent
+    case2DateMode: null,
   };
 
   // Demo anchor: today = 5 मई (मंगलवार), the day Wiom originally proposed.
@@ -1468,11 +1472,29 @@
       <div class="date-day">शुक्र</div><div class="date-num">8</div>
     </div>`;
 
-  // Case 2 date row — 11 options spanning partner's 4 dates + 7 more dates after.
-  // Default scroll position lands on the 5th card (9 मई) at the left edge;
+  // Case 2 'partnerOnly' (4 dates) — partner's original offered window.
+  // Shown when user clicks "कोई अन्य दिन चुनें" CTA.
+  // 5 मई = originally proposed (marked `current`).
+  const PARTNER_ONLY_DATE_ROW_HTML = `
+    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">5</div>
+    </div>
+    <div class="date-card" data-date="6 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">6</div>
+    </div>
+    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">7</div>
+    </div>
+    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">8</div>
+    </div>`;
+
+  // Case 2 'reschedule' (11 dates) — full reschedule view shown when customer types intent.
+  // Spans partner's 4 dates + 7 more dates after.
+  // Default scroll lands on the 5th card (9 मई) at the left edge;
   // user scrolls LEFT to reveal partner's original 4 dates (5–8 मई).
   // 5 मई = originally proposed (marked `current`).
-  const CASE2_DATE_ROW_HTML = `
+  const RESCHEDULE_DATE_ROW_HTML = `
     <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
       <div class="date-day">मंगल</div><div class="date-num">5</div>
     </div>
@@ -1679,16 +1701,26 @@
     pickerScreen.classList.add('active');
     pickerScreen.dataset.case = String(state.case);
 
-    // Swap date row based on case
-    dateRow.innerHTML = (state.case === 2) ? CASE2_DATE_ROW_HTML : DEFAULT_DATE_ROW_HTML;
-
-    // Case 2: 11 dates total — initial scroll lands on the 5th card (9 मई) at the left edge;
-    // user can scroll LEFT to reveal partner's original 4 dates (5–8 मई).
+    // Swap date row based on case + Case 2 sub-mode
+    let rowHtml = DEFAULT_DATE_ROW_HTML;
+    let scrollToFifth = false;
     if (state.case === 2) {
+      if (state.case2DateMode === 'partnerOnly') {
+        rowHtml = PARTNER_ONLY_DATE_ROW_HTML;
+      } else {
+        rowHtml = RESCHEDULE_DATE_ROW_HTML;
+        scrollToFifth = true;
+      }
+    }
+    dateRow.innerHTML = rowHtml;
+
+    // 11-date reschedule view: scroll so the 5th card (9 मई) is the first "main" card,
+    // with the previous card (8 मई) PEEKING in from the left (~16px) to hint at scrollability.
+    // Subtraction = peek width (16) + gap between cards (8) = 24px.
+    if (scrollToFifth) {
       const fifthCard = dateRow.children[4];
       if (fifthCard) {
-        // Wait for layout, then position scroll
-        requestAnimationFrame(() => { dateRow.scrollLeft = fifthCard.offsetLeft; });
+        requestAnimationFrame(() => { dateRow.scrollLeft = fifthCard.offsetLeft - 24; });
       }
     } else {
       dateRow.scrollLeft = 0;
@@ -1715,8 +1747,8 @@
   }
 
   contextNextBtn.addEventListener('click', showScenario);
-  scenario1Card.addEventListener('click', () => { state.case = 1; startChat(); });
-  scenario2Card.addEventListener('click', () => { state.case = 2; startChat(); });
+  scenario1Card.addEventListener('click', () => { state.case = 1; state.case2DateMode = null; startChat(); });
+  scenario2Card.addEventListener('click', () => { state.case = 2; state.case2DateMode = null; startChat(); });
 
   // Build initial chat content for Case 2 — Wiom proposed a day, user hasn't confirmed yet
   function setupCase2Chat() {
@@ -1761,6 +1793,8 @@
     changeCta.addEventListener('click', () => {
       // Track this CTA as the "active" one for post-confirm reply quote
       state.activeCta = changeCta;
+      // CTA path → show only the partner's 4-day window
+      state.case2DateMode = 'partnerOnly';
       // Don't mute yet — CTA stays active until a NEW chat bubble appears after it
       // (i.e., user confirms a date in picker, or types an intent in chat).
       // If user just goes back from picker without confirming, CTAs stay tappable.
@@ -1808,8 +1842,10 @@
 
     // Once user types intent, any earlier interactive CTAs become stale (mute them).
     // Case 2: the proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
+    // Customer-typed reschedule path → show full 11-date view
     if (state.case === 2) {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
+      state.case2DateMode = 'reschedule';
     }
 
     // Reset input + close keyboard
@@ -1917,6 +1953,10 @@
 
   confirmBtn.addEventListener('click', () => {
     showChat();
+
+    // Flow is committing — block any further typing in the chatbox.
+    // (For typed paths this is already true; for Case 2 CTA path it's still false until now.)
+    state.intentSent = true;
 
     // 1. User reply bubble with quote of bot's earlier prompt + "✔️ हो गया"
     //    A new bubble appears after the prior CTAs → mute all bot CTAs above it.
