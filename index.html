@@ -1256,42 +1256,44 @@
           <div class="prev-chat-card-text">keep the previous chat history as is</div>
         </div>
 
-        <!-- Bot: date question with two inline CTAs (notch on first) -->
+        <!-- Bot: Wiom's two-slot proposal (history — CTAs muted) -->
         <div class="msg-row bot">
           <div class="msg-wrap">
             <div class="msg-tail"></div>
             <div class="msg-bubble has-cta-below">
               <div class="msg-content">
-                <div class="msg-text">क्या <strong>5 मई</strong>, <strong>10 से 1 बजे के बीच</strong> आपको ठीक लगेगा?</div>
+                <div class="msg-text">आपका नेट इनमें से किसी एक समय पर लग सकता है —</div>
+                <div class="msg-text">&nbsp;</div>
+                <div class="msg-text"><strong>12 मई, मंगलवार</strong> · दोपहर 1 से 4 बजे तक</div>
+                <div class="msg-text"><strong>13 मई, बुधवार</strong> · सुबह 10 से 1 बजे तक</div>
+                <div class="msg-text">&nbsp;</div>
+                <div class="msg-text">बताइए कौन-सा समय ठीक रहेगा?</div>
                 <div class="msg-time">10:15 AM</div>
               </div>
             </div>
             <div class="msg-divider"></div>
             <div class="msg-cta muted middle">
-              <span class="msg-cta-text">यह दिन सही है</span>
+              <span class="msg-cta-text">12 मई, दोपहर</span>
+            </div>
+            <div class="msg-divider"></div>
+            <div class="msg-cta muted middle">
+              <span class="msg-cta-text">13 मई, सुबह</span>
             </div>
             <div class="msg-divider"></div>
             <div class="msg-cta muted">
-              <span class="msg-cta-text">कोई अन्य दिन चुनें</span>
+              <span class="msg-cta-text">कोई अन्य दिन</span>
             </div>
           </div>
         </div>
 
-        <!-- User: reply with quote + sent tick (notch on right) -->
+        <!-- User: picked Slot A (history) -->
         <div class="msg-row user">
           <div class="msg-wrap">
             <div class="msg-tail"></div>
             <div class="msg-bubble">
-              <div class="reply-quote">
-                <div class="reply-quote-bar"></div>
-                <div class="reply-quote-text">
-                  <div class="reply-quote-author">Wiom</div>
-                  <div class="reply-quote-msg">क्या 5 मई, 10 से 1 बजे के बीच आपको ठीक लगेगा?</div>
-                </div>
-              </div>
               <div class="msg-content">
-                <div class="msg-text">यह दिन सही है</div>
-                <div class="msg-time">10:15 AM <span class="material-icons">done_all</span></div>
+                <div class="msg-text">12 मई, दोपहर</div>
+                <div class="msg-time">10:16 AM <span class="material-icons">done_all</span></div>
               </div>
             </div>
           </div>
@@ -1305,8 +1307,8 @@
               <div class="msg-content">
                 <div class="msg-text">तारीख पक्की हो गई।</div>
                 <div class="msg-text">&nbsp;</div>
-                <div class="msg-text">नेट <strong>5 मई</strong>, <strong>10 से 1 बजे के बीच</strong> लगेगा।</div>
-                <div class="msg-time">10:15 AM</div>
+                <div class="msg-text">नेट <strong>12 मई</strong>, <strong>दोपहर 1 से 4 बजे के बीच</strong> लगेगा।</div>
+                <div class="msg-time">10:16 AM</div>
               </div>
             </div>
           </div>
@@ -1393,40 +1395,13 @@
       </header>
 
       <div class="picker-body">
-        <div class="context-strip">
-          <div class="context-strip-label">अभी तय है</div>
-          <div class="context-strip-value">5 मई, मंगलवार</div>
-          <div class="context-strip-time">10 से 1 बजे के बीच</div>
-        </div>
+        <!-- context-strip content is injected per-case by showPicker() -->
+        <div class="context-strip"></div>
 
         <div class="section-block">
           <div class="section-title">मई, 2026</div>
-          <div class="date-row" id="dateRow">
-            <div class="date-card" data-date="1 मई" data-day="शुक्रवार">
-              <div class="date-day">शुक्र</div><div class="date-num">1</div>
-            </div>
-            <div class="date-card disabled" data-date="2 मई" data-day="शनिवार">
-              <div class="date-day">शनि</div><div class="date-num">2</div>
-            </div>
-            <div class="date-card" data-date="3 मई" data-day="रविवार">
-              <div class="date-day">रवि</div><div class="date-num">3</div>
-            </div>
-            <div class="date-card" data-date="4 मई" data-day="सोमवार">
-              <div class="date-day">सोम</div><div class="date-num">4</div>
-            </div>
-            <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
-              <div class="date-day">मंगल</div><div class="date-num">5</div>
-            </div>
-            <div class="date-card" data-date="6 मई" data-day="बुधवार">
-              <div class="date-day">बुध</div><div class="date-num">6</div>
-            </div>
-            <div class="date-card" data-date="7 मई" data-day="गुरुवार">
-              <div class="date-day">गुरु</div><div class="date-num">7</div>
-            </div>
-            <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
-              <div class="date-day">शुक्र</div><div class="date-num">8</div>
-            </div>
-          </div>
+          <!-- date cards are injected by showPicker() -->
+          <div class="date-row" id="dateRow"></div>
         </div>
 
         <div class="section-block time-section" id="timeSection">
@@ -1488,86 +1463,45 @@
     typed: false,
     case: 1,
     // Case 2 picker mode — null | 'partnerOnly' | 'reschedule'
-    //   partnerOnly → 4 dates (partner's window)         — set when CTA "कोई अन्य दिन चुनें" clicked
-    //   reschedule  → 11 dates (5–15 मई, scroll to 9 मई) — set when customer types intent
+    //   partnerOnly → 4 dates (partner's window 12–15 मई) — set when CTA "कोई अन्य दिन" clicked
+    //   reschedule  → 11 dates (12–22 मई, scroll to 16 मई) — set when customer types intent
     case2DateMode: null,
+    // True once the user has picked one of Wiom's two proposed slots (Case 2).
+    committed: false,
   };
 
-  // Demo anchor: today = 5 मई (मंगलवार), the day Wiom originally proposed.
-  // Partner's original 4-day window = 5, 6, 7, 8 मई.
+  // The two date+time options Wiom proposes in Case 2.
+  const PROPOSED_SLOTS = [
+    { id: 'A', date: '12 मई', day: 'मंगलवार', time: 'दोपहर 1 से 4 बजे', ctaShort: '12 मई, दोपहर' },
+    { id: 'B', date: '13 मई', day: 'बुधवार',  time: 'सुबह 10 से 1 बजे', ctaShort: '13 मई, सुबह'  },
+  ];
 
-  // Default date row (Case 1): around the confirmed date 5 मई
-  const DEFAULT_DATE_ROW_HTML = `
-    <div class="date-card" data-date="1 मई" data-day="शुक्रवार">
-      <div class="date-day">शुक्र</div><div class="date-num">1</div>
-    </div>
-    <div class="date-card disabled" data-date="2 मई" data-day="शनिवार">
-      <div class="date-day">शनि</div><div class="date-num">2</div>
-    </div>
-    <div class="date-card" data-date="3 मई" data-day="रविवार">
-      <div class="date-day">रवि</div><div class="date-num">3</div>
-    </div>
-    <div class="date-card" data-date="4 मई" data-day="सोमवार">
-      <div class="date-day">सोम</div><div class="date-num">4</div>
-    </div>
-    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
-      <div class="date-day">मंगल</div><div class="date-num">5</div>
-    </div>
-    <div class="date-card" data-date="6 मई" data-day="बुधवार">
-      <div class="date-day">बुध</div><div class="date-num">6</div>
-    </div>
-    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
-      <div class="date-day">गुरु</div><div class="date-num">7</div>
-    </div>
-    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
-      <div class="date-day">शुक्र</div><div class="date-num">8</div>
-    </div>`;
+  // Demo anchor: Wiom proposed 12 मई (Slot A) and 13 मई (Slot B).
 
   // Case 2 'partnerOnly' (4 dates) — partner's original offered window.
-  // Shown when user clicks "कोई अन्य दिन चुनें" CTA.
-  // 5 मई = originally proposed (marked `current`).
+  // Shown when user clicks "कोई अन्य दिन" CTA.
+  // 12 & 13 मई = the two slots Wiom proposed (marked `current`).
   const PARTNER_ONLY_DATE_ROW_HTML = `
-    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
-      <div class="date-day">मंगल</div><div class="date-num">5</div>
+    <div class="date-card current" data-date="12 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">12</div>
     </div>
-    <div class="date-card" data-date="6 मई" data-day="बुधवार">
-      <div class="date-day">बुध</div><div class="date-num">6</div>
+    <div class="date-card current" data-date="13 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">13</div>
     </div>
-    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
-      <div class="date-day">गुरु</div><div class="date-num">7</div>
+    <div class="date-card" data-date="14 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">14</div>
     </div>
-    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
-      <div class="date-day">शुक्र</div><div class="date-num">8</div>
+    <div class="date-card" data-date="15 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">15</div>
     </div>`;
 
-  // Case 2 'reschedule' (11 dates) — full reschedule view shown when customer types intent.
-  // Spans partner's 4 dates + 7 more dates after.
-  // Default scroll lands on the 5th card (9 मई) at the left edge;
-  // user scrolls LEFT to reveal partner's original 4 dates (5–8 मई).
-  // 5 मई = originally proposed (marked `current`).
+  // Reschedule view (11 dates, 12–22 मई) — used by Case 1, Case 2 typed-path, Case 3.
+  // Structure: [partner's 4-day window 12–15 मई] + [7 days after, 16–22 मई].
+  // Default scroll lands on the 5th card (16 मई) — the first day AFTER the partner window;
+  // user scrolls LEFT to reveal the partner's 4 suggested dates (12–15 मई), 15 मई peeking.
+  // 12 मई = the confirmed/proposed date (marked `current`). 17 मई (रवि) is disabled.
   const RESCHEDULE_DATE_ROW_HTML = `
-    <div class="date-card current" data-date="5 मई" data-day="मंगलवार">
-      <div class="date-day">मंगल</div><div class="date-num">5</div>
-    </div>
-    <div class="date-card" data-date="6 मई" data-day="बुधवार">
-      <div class="date-day">बुध</div><div class="date-num">6</div>
-    </div>
-    <div class="date-card" data-date="7 मई" data-day="गुरुवार">
-      <div class="date-day">गुरु</div><div class="date-num">7</div>
-    </div>
-    <div class="date-card" data-date="8 मई" data-day="शुक्रवार">
-      <div class="date-day">शुक्र</div><div class="date-num">8</div>
-    </div>
-    <div class="date-card" data-date="9 मई" data-day="शनिवार">
-      <div class="date-day">शनि</div><div class="date-num">9</div>
-    </div>
-    <div class="date-card disabled" data-date="10 मई" data-day="रविवार">
-      <div class="date-day">रवि</div><div class="date-num">10</div>
-    </div>
-    <div class="date-card" data-date="11 मई" data-day="सोमवार">
-      <div class="date-day">सोम</div><div class="date-num">11</div>
-    </div>
-    <div class="date-card" data-date="12 मई" data-day="मंगलवार">
+    <div class="date-card current" data-date="12 मई" data-day="मंगलवार">
       <div class="date-day">मंगल</div><div class="date-num">12</div>
     </div>
     <div class="date-card" data-date="13 मई" data-day="बुधवार">
@@ -1578,6 +1512,27 @@
     </div>
     <div class="date-card" data-date="15 मई" data-day="शुक्रवार">
       <div class="date-day">शुक्र</div><div class="date-num">15</div>
+    </div>
+    <div class="date-card" data-date="16 मई" data-day="शनिवार">
+      <div class="date-day">शनि</div><div class="date-num">16</div>
+    </div>
+    <div class="date-card disabled" data-date="17 मई" data-day="रविवार">
+      <div class="date-day">रवि</div><div class="date-num">17</div>
+    </div>
+    <div class="date-card" data-date="18 मई" data-day="सोमवार">
+      <div class="date-day">सोम</div><div class="date-num">18</div>
+    </div>
+    <div class="date-card" data-date="19 मई" data-day="मंगलवार">
+      <div class="date-day">मंगल</div><div class="date-num">19</div>
+    </div>
+    <div class="date-card" data-date="20 मई" data-day="बुधवार">
+      <div class="date-day">बुध</div><div class="date-num">20</div>
+    </div>
+    <div class="date-card" data-date="21 मई" data-day="गुरुवार">
+      <div class="date-day">गुरु</div><div class="date-num">21</div>
+    </div>
+    <div class="date-card" data-date="22 मई" data-day="शुक्रवार">
+      <div class="date-day">शुक्र</div><div class="date-num">22</div>
     </div>`;
 
   const contextScreen  = document.getElementById('contextScreen');
@@ -1775,8 +1730,8 @@
     pickerScreen.dataset.case = String(state.case);
 
     // Swap date row based on case + Case 2 sub-mode.
-    // All cases except Case 2 partnerOnly use the wider 11-date view (5–15 मई) where
-    // the 5th card (9 मई) is the first main visible card and 8 मई peeks from the left.
+    // All cases except Case 2 partnerOnly use the wider 11-date view (12–22 मई) where
+    // the 5th card (16 मई) is the first main visible card and 15 मई peeks from the left.
     let rowHtml = RESCHEDULE_DATE_ROW_HTML;
     let scrollToFifth = true;
     if (state.case === 2 && state.case2DateMode === 'partnerOnly') {
@@ -1785,9 +1740,9 @@
     }
     dateRow.innerHTML = rowHtml;
 
-    // 11-date reschedule view: scroll so the 5th card (9 मई) is the first "main" card,
-    // with the previous card (8 मई) PEEKING in from the left (~16px) to hint at scrollability.
-    // Subtraction = peek width (16) + gap between cards (8) = 24px.
+    // 11-date reschedule view: scroll so the 5th card (16 मई) is the first "main" card,
+    // with the previous card (15 मई) PEEKING in from the left (~16px) to hint at the
+    // partner's 4 suggested dates (12–15 मई). Subtraction = peek (16) + gap (8) = 24px.
     if (scrollToFifth) {
       const fifthCard = dateRow.children[4];
       if (fifthCard) {
@@ -1801,15 +1756,15 @@
     const strip = pickerScreen.querySelector('.context-strip');
     if (state.case === 2) {
       strip.innerHTML = `
-        <div class="context-strip-label">व्योम ने सुझाया था</div>
-        <div class="context-strip-value">5 मई, मंगलवार</div>
-        <div class="context-strip-time">10 से 1 बजे के बीच</div>`;
+        <div class="context-strip-label">व्योम ने सुझाए थे</div>
+        <div class="context-strip-value">12 मई · दोपहर 1 से 4 बजे</div>
+        <div class="context-strip-time">या 13 मई · सुबह 10 से 1 बजे</div>`;
     } else {
-      // Case 1 & Case 3 — date is already confirmed by the customer
+      // Case 1 & Case 3 — user had confirmed Slot A (12 मई, दोपहर) earlier
       strip.innerHTML = `
         <div class="context-strip-label">अभी तय है</div>
-        <div class="context-strip-value">5 मई, मंगलवार</div>
-        <div class="context-strip-time">10 से 1 बजे के बीच</div>`;
+        <div class="context-strip-value">12 मई, मंगलवार</div>
+        <div class="context-strip-time">दोपहर 1 से 4 बजे</div>`;
     }
   }
   function showChat() {
@@ -1819,11 +1774,112 @@
   }
 
   contextNextBtn.addEventListener('click', showScenario);
-  scenario1Card.addEventListener('click', () => { state.case = 1; state.case2DateMode = null; startChat(); });
-  scenario2Card.addEventListener('click', () => { state.case = 2; state.case2DateMode = null; startChat(); });
-  scenario3Card.addEventListener('click', () => { state.case = 3; state.case2DateMode = null; startChat(); });
+  scenario1Card.addEventListener('click', () => { state.case = 1; state.case2DateMode = null; state.committed = false; startChat(); });
+  scenario2Card.addEventListener('click', () => { state.case = 2; state.case2DateMode = null; state.committed = false; startChat(); });
+  scenario3Card.addEventListener('click', () => { state.case = 3; state.case2DateMode = null; state.committed = false; startChat(); });
 
   // Build initial chat content for Case 2 — Wiom proposed a day, user hasn't confirmed yet
+  // Bot bubble: Wiom proposes TWO date+time slots, each with its own CTA,
+  // plus a "कोई अन्य दिन" CTA that opens the picker.
+  function twoSlotProposalBubble(intro, slots, time) {
+    const row = document.createElement('div');
+    row.className = 'msg-row bot';
+
+    // Intro + the two slot lines + a closing question, all inside one bubble.
+    const slotLines = slots
+      .map(s => `<div class="msg-text"><strong>${s.date}, ${s.day}</strong> · ${s.time} तक</div>`)
+      .join('');
+    // One CTA per slot (data-action="pick-A"/"pick-B") + a trailing "कोई अन्य दिन" CTA.
+    const slotCtas = slots
+      .map(s => `
+        <div class="msg-divider"></div>
+        <button class="msg-cta middle" type="button" data-action="pick-${s.id}">
+          <span class="msg-cta-text">${s.ctaShort}</span>
+        </button>`)
+      .join('');
+
+    row.innerHTML = `
+      <div class="msg-wrap">
+        <div class="msg-tail"></div>
+        <div class="msg-bubble has-cta-below">
+          <div class="msg-content">
+            <div class="msg-text">${intro}</div>
+            <div class="msg-text">&nbsp;</div>
+            ${slotLines}
+            <div class="msg-text">&nbsp;</div>
+            <div class="msg-text">बताइए कौन-सा समय ठीक रहेगा?</div>
+            <div class="msg-time">${time}</div>
+          </div>
+        </div>
+        ${slotCtas}
+        <div class="msg-divider"></div>
+        <button class="msg-cta" type="button" data-action="change">
+          <span class="msg-cta-text">कोई अन्य दिन</span>
+        </button>
+      </div>`;
+    return row;
+  }
+
+  // Wire the two-slot proposal: pick-A/pick-B commit that slot; "change" opens the picker.
+  function wireTwoSlotCtas(bubble) {
+    PROPOSED_SLOTS.forEach(slot => {
+      const btn = bubble.querySelector(`[data-action="pick-${slot.id}"]`);
+      if (btn) btn.addEventListener('click', () => commitProposedSlot(slot));
+    });
+    const changeBtn = bubble.querySelector('[data-action="change"]');
+    changeBtn.addEventListener('click', () => {
+      // Track this CTA as the "active" one for post-confirm reply quote
+      state.activeCta = changeBtn;
+      // CTA path → show only the partner's 4-day window
+      state.case2DateMode = 'partnerOnly';
+      // Don't mute yet — CTA stays active until a NEW chat bubble appears after it.
+      showPicker();
+    });
+  }
+
+  // User picked one of Wiom's two proposed slots → commit it and run the confirmation flow.
+  function commitProposedSlot(slot) {
+    if (state.committed) return;
+    state.committed = true;
+    state.intentSent = true; // also blocks the chatbox
+    // A new bubble will appear after the proposal CTAs → mute them all.
+    chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
+
+    setTimeout(() => {
+      chatBody.appendChild(userBubble(slot.ctaShort, '10:16 AM'));
+      scrollChatToBottom();
+    }, 200);
+
+    setTimeout(() => {
+      chatBody.appendChild(waitingBubble());
+      scrollChatToBottom();
+    }, 900);
+
+    setTimeout(() => {
+      const w = document.getElementById('waitingBubble');
+      if (w) w.remove();
+      chatBody.appendChild(botBubble([
+        'तारीख पक्की हो गई।',
+        '&nbsp;',
+        `नेट <strong>${slot.date}</strong>, <strong>${slot.time} के बीच</strong> लगेगा।`
+      ], '10:16 AM'));
+      chatBody.appendChild(botBubble(['अब आप आराम करें'], '10:16 AM', true));
+      scrollChatToBottom();
+    }, 2400);
+
+    setTimeout(() => {
+      const endCard = document.createElement('div');
+      endCard.className = 'prev-chat-card restart';
+      endCard.innerHTML = `
+        <div class="prev-chat-card-note">This is not part of design · Tap to restart</div>
+        <div class="prev-chat-card-text">Partner will receive the chosen slot and assign the engineer → Rest of the flow will be same as of today</div>
+      `;
+      endCard.addEventListener('click', () => location.reload());
+      chatBody.appendChild(endCard);
+      scrollChatToBottom();
+    }, 4400);
+  }
+
   function setupCase2Chat() {
     chatBody.innerHTML = '';
 
@@ -1835,44 +1891,14 @@
     `;
     chatBody.appendChild(prevCard);
 
-    // Bot bubble: proposal with two CTAs.
-    // - "यह दिन सही है" — visually present but inert (no click handler) for demo
-    // - "कोई अन्य दिन चुनें" — ACTIVE, opens picker with shifted date window
-    const proposalRow = document.createElement('div');
-    proposalRow.className = 'msg-row bot';
-    proposalRow.innerHTML = `
-      <div class="msg-wrap">
-        <div class="msg-tail"></div>
-        <div class="msg-bubble has-cta-below">
-          <div class="msg-content">
-            <div class="msg-text">क्या <strong>5 मई</strong>, <strong>10 से 1 बजे के बीच</strong> आपको ठीक लगेगा?</div>
-            <div class="msg-time">10:15 AM</div>
-          </div>
-        </div>
-        <div class="msg-divider"></div>
-        <button class="msg-cta middle" type="button" data-action="accept">
-          <span class="msg-cta-text">यह दिन सही है</span>
-        </button>
-        <div class="msg-divider"></div>
-        <button class="msg-cta" type="button" data-action="change">
-          <span class="msg-cta-text">कोई अन्य दिन चुनें</span>
-        </button>
-      </div>`;
-    chatBody.appendChild(proposalRow);
-
-    // Wire up only the "कोई अन्य दिन चुनें" CTA (the other stays inert per demo)
-    const acceptCta = proposalRow.querySelector('[data-action="accept"]');
-    const changeCta = proposalRow.querySelector('[data-action="change"]');
-    changeCta.addEventListener('click', () => {
-      // Track this CTA as the "active" one for post-confirm reply quote
-      state.activeCta = changeCta;
-      // CTA path → show only the partner's 4-day window
-      state.case2DateMode = 'partnerOnly';
-      // Don't mute yet — CTA stays active until a NEW chat bubble appears after it
-      // (i.e., user confirms a date in picker, or types an intent in chat).
-      // If user just goes back from picker without confirming, CTAs stay tappable.
-      showPicker();
-    });
+    // Wiom proposes two date+time slots.
+    const bubble = twoSlotProposalBubble(
+      'आपका नेट इनमें से किसी एक समय पर लग सकता है —',
+      PROPOSED_SLOTS,
+      '10:15 AM'
+    );
+    chatBody.appendChild(bubble);
+    wireTwoSlotCtas(bubble);
   }
 
   // Build initial chat content for Case 3 — Engineer is already assigned for the confirmed setup day.
@@ -1896,7 +1922,7 @@
 
     // Bot follow-up bubble (no notch): engineer name + visit day in plain text
     chatBody.appendChild(botBubble(
-      ['<strong>5 मई</strong> को रोहित कुमार आपके घर पर नेट लगाने के लिए आ जाएंगे'],
+      ['<strong>12 मई</strong> को रोहित कुमार आपके घर पर नेट लगाने के लिए आ जाएंगे'],
       '10:15 AM',
       true
     ));
@@ -1944,7 +1970,7 @@
     chatBody.appendChild(userBubble(userMsg, '10:42 AM'));
 
     // Once user types intent, any earlier interactive CTAs become stale (mute them).
-    // Case 2: the proposal CTAs (यह दिन सही है / कोई अन्य दिन चुनें)
+    // Case 2: the two-slot proposal CTAs (pick-A / pick-B / कोई अन्य दिन)
     // Customer-typed reschedule path → show full 11-date view
     if (state.case === 2) {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
@@ -1969,7 +1995,10 @@
       const waiting = document.getElementById('waitingBubble');
       if (waiting) waiting.remove();
 
-      const responseTexts = ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'];
+      // Case 3 — engineer is already assigned; tell the customer a दूसरा (replacement) engineer will be sent.
+      const responseTexts = state.case === 3
+        ? ['ठीक है। नए दिन के लिए एक दूसरे इंजीनियर को भेजा जाएगा।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।']
+        : ['ठीक है।', '&nbsp;', 'नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'];
       const ctaLabel = 'नेट लगवाने का दिन बदलें';
 
       const ctaRow = botBubbleWithCTA(
@@ -1995,7 +2024,7 @@
   // Demo availability — date string → list of available slot names
   // (date not in this map = all 3 slots available)
   const slotAvailability = {
-    '11 मई': ['शाम'],   // 11 मई: only शाम is available, सुबह + दोपहर are booked
+    '18 मई': ['शाम'],   // 18 मई: only शाम is available, सुबह + दोपहर are booked
   };
 
   dateRow.addEventListener('click', (e) => {
@@ -2065,7 +2094,10 @@
     //    A new bubble appears after the prior CTAs → mute all bot CTAs above it.
     setTimeout(() => {
       chatBody.querySelectorAll('.msg-row.bot .msg-cta').forEach(c => c.classList.add('muted'));
-      const quotedBotMsg = 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
+      // Quote of the bot's earlier CTA prompt — Case 3 includes the दूसरा-engineer line.
+      const quotedBotMsg = state.case === 3
+        ? 'ठीक है। नए दिन के लिए एक दूसरे इंजीनियर को भेजा जाएगा। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।'
+        : 'ठीक है। नीचे दिए गए बटन पर क्लिक करके नेट लगवाने का दिन बदलें।';
       chatBody.appendChild(userReplyWithQuote(
         quotedBotMsg,
         '✔️ हो गया',
@@ -2144,12 +2176,10 @@
       if (restartCard) {
         targets = [restartCard];
       } else if (!state.intentSent) {
-        // Chatbox is always tappable. In Case 2 there's also an active proposal CTA
-        // ("कोई अन्य दिन चुनें") — pulse the latest active one alongside the chatbox.
+        // Chatbox is always tappable. In Case 2 the two-slot proposal also has
+        // active CTAs (pick-A / pick-B / कोई अन्य दिन) — pulse all of them.
         targets = [inputField];
-        const activeCtas = chatBody.querySelectorAll('.msg-cta:not(.muted)');
-        const latestCta = activeCtas[activeCtas.length - 1];
-        if (latestCta) targets.push(latestCta);
+        chatBody.querySelectorAll('.msg-cta:not(.muted)').forEach(c => targets.push(c));
       } else {
         // Target the LATEST active CTA, not the first — Case 2 has inert
         // proposal CTAs above that come before the bot's response CTA in DOM order
